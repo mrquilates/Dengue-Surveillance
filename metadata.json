@@ -1,0 +1,8 @@
+{
+  "name": "Remix EIEWS Public Health Intelligence",
+  "description": "Interactive intelligence dashboard for localized early warning alert and response system with multi-source data collection and collaborative surveillance framework.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

@@ -1,0 +1,75 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --bg: #0b0c0e;
+    --surface: #111318;
+    --surface-elevated: #171a21;
+    --ink: #f1f5f9;
+    --ink-muted: #94a3b8;
+    --hairline: rgba(228, 228, 231, 0.08);
+    --font-display: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    --font-sans: 'DM Sans', system-ui, -apple-system, sans-serif;
+    --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+  }
+
+  body {
+    background-color: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1, h2, h3, h4 {
+    font-family: var(--font-display);
+  }
+
+  .font-mono {
+    font-family: var(--font-mono);
+  }
+
+  /* Custom subtle scrollbars */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: rgba(11, 12, 14, 0.8);
+  }
+  ::-webkit-scrollbar-thumb {
+    background: rgba(228, 228, 231, 0.16);
+    border-radius: 9999px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(228, 228, 231, 0.3);
+  }
+}
+
+@media print {
+  @page {
+    size: landscape;
+    margin: 0.45in;
+  }
+
+  html, body {
+    background: #0b0c0e !important;
+    color: #f1f5f9 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+
+  .print-expand {
+    max-height: none !important;
+    overflow: visible !important;
+  }
+
+  .print-break-inside {
+    break-inside: avoid;
+  }
+}

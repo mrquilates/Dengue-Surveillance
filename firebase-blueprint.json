@@ -1,0 +1,84 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "User profile with role and authentication details",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "description": "Firebase Auth UID" },
+        "displayName": { "type": "string", "description": "Full display name" },
+        "email": { "type": "string", "format": "email", "description": "User email address" },
+        "photoURL": { "type": "string", "description": "Avatar photo URL" },
+        "role": { "type": "string", "description": "Surveillance operational role" },
+        "createdAt": { "type": "string", "description": "Account registration timestamp" },
+        "updatedAt": { "type": "string", "description": "Last activity timestamp" }
+      },
+      "required": ["uid", "email"]
+    },
+    "SurveillanceInvestigation": {
+      "title": "SurveillanceInvestigation",
+      "description": "Persisted field investigation notes and epidemiological findings",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Investigation ID" },
+        "userId": { "type": "string", "description": "Owner user UID" },
+        "title": { "type": "string", "description": "Investigation title" },
+        "diseaseId": { "type": "string", "description": "Disease identifier (e.g. DEN, CHOL, MEA)" },
+        "morbidityWeek": { "type": "number", "description": "Morbidity week of analysis" },
+        "summaryNotes": { "type": "string", "description": "Detailed clinical or field observations" },
+        "actionRequired": { "type": "string", "description": "Directives or containment measures" },
+        "createdAt": { "type": "string", "description": "Creation ISO timestamp" }
+      },
+      "required": ["id", "userId", "title", "createdAt"]
+    },
+    "CustomIntervention": {
+      "title": "CustomIntervention",
+      "description": "Custom policy or outbreak containment milestone marker",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Marker unique identifier" },
+        "userId": { "type": "string", "description": "Owner user UID" },
+        "mw": { "type": "number", "description": "Morbidity week of implementation" },
+        "title": { "type": "string", "description": "Title of public health intervention" },
+        "category": { "type": "string", "description": "Intervention sector category" },
+        "description": { "type": "string", "description": "Description of the intervention" },
+        "impactNote": { "type": "string", "description": "Observed epidemiological impact" },
+        "createdAt": { "type": "string", "description": "Creation timestamp" }
+      },
+      "required": ["id", "userId", "mw", "title", "category"]
+    },
+    "SavedDataset": {
+      "title": "SavedDataset",
+      "description": "Metadata for an uploaded surveillance line-list dataset",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Dataset unique ID" },
+        "userId": { "type": "string", "description": "Owner user UID" },
+        "filename": { "type": "string", "description": "Original CSV filename" },
+        "recordCount": { "type": "number", "description": "Valid records count" },
+        "diseaseId": { "type": "string", "description": "Target disease identifier" },
+        "overallDqi": { "type": "number", "description": "Certified Data Quality Index" },
+        "uploadedAt": { "type": "string", "description": "Upload timestamp" }
+      },
+      "required": ["id", "userId", "filename", "recordCount", "uploadedAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "UserProfile",
+      "description": "Root user profile document"
+    },
+    "/users/{userId}/investigations/{investigationId}": {
+      "schema": "SurveillanceInvestigation",
+      "description": "Saved epidemiological investigations per user"
+    },
+    "/users/{userId}/interventions/{interventionId}": {
+      "schema": "CustomIntervention",
+      "description": "Custom outbreak milestones and interventions per user"
+    },
+    "/users/{userId}/datasets/{datasetId}": {
+      "schema": "SavedDataset",
+      "description": "Persisted line-list upload metadata per user"
+    }
+  }
+}
