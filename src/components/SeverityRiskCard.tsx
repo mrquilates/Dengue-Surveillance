@@ -11,7 +11,7 @@ export const SeverityRiskCard: React.FC<SeverityRiskCardProps> = ({ records }) =
     return calculateClinicalSeverityBreakdown(records);
   }, [records]);
 
-  const classifications = [
+  const clinicalClassifications = [
     {
       label: 'Without Warning Signs',
       count: severity.withoutWarningSigns.count,
@@ -35,6 +35,30 @@ export const SeverityRiskCard: React.FC<SeverityRiskCardProps> = ({ records }) =
     },
   ];
 
+  const caseClassifications = [
+    {
+      label: 'Confirmed',
+      count: severity.confirmed.count,
+      pct: severity.confirmed.pct,
+      barColor: 'bg-emerald-500',
+      textColor: 'text-emerald-300',
+    },
+    {
+      label: 'Probable',
+      count: severity.probable.count,
+      pct: severity.probable.pct,
+      barColor: 'bg-amber-500',
+      textColor: 'text-amber-300',
+    },
+    {
+      label: 'Suspect',
+      count: severity.suspect.count,
+      pct: severity.suspect.pct,
+      barColor: 'bg-slate-500',
+      textColor: 'text-slate-300',
+    },
+  ];
+
   const radius = 44;
   const semiCircumference = Math.PI * radius;
   const clampedPct = Math.max(0, Math.min(100, severity.hospitalizationRatePct));
@@ -43,19 +67,27 @@ export const SeverityRiskCard: React.FC<SeverityRiskCardProps> = ({ records }) =
   return (
     <div className="p-5 rounded-xl bg-[#111318] border border-white/[0.08] flex flex-col justify-between h-full print-break-inside">
       {/* Header */}
-      <div className="pb-4 border-b border-white/[0.08]">
-        <h3 className="text-base font-semibold text-white tracking-tight">
-          Severity Risk &amp; Hospitalization
-        </h3>
-        <p className="text-xs text-slate-400 mt-0.5">
-          Clinical classification &amp; hospitalization rate
-        </p>
+      <div className="pb-3.5 border-b border-white/[0.08] flex items-start justify-between gap-3">
+        <div>
+          <h3 className="text-base font-semibold text-white tracking-tight">
+            Clinical &amp; Case Classification
+          </h3>
+          <p className="text-xs text-slate-400 mt-0.5">
+            Severity spectrum, hospitalization &amp; PIDSR case classification
+          </p>
+        </div>
+        <div className="text-right font-mono tabular-nums text-xs shrink-0">
+          <div className="text-slate-400">Classified</div>
+          <div className="text-sm font-bold text-white">
+            {severity.totalClassified.toLocaleString()}
+          </div>
+        </div>
       </div>
 
       {/* Hospitalization Rate (%) Gauge */}
-      <div className="py-5 border-b border-white/[0.08] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="py-4 border-b border-white/[0.08] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-4">
-          <div className="relative w-28 h-16 shrink-0 flex items-end justify-center">
+          <div className="relative w-24 h-14 shrink-0 flex items-end justify-center">
             <svg
               viewBox="0 0 110 62"
               className="w-full h-full overflow-visible"
@@ -80,7 +112,7 @@ export const SeverityRiskCard: React.FC<SeverityRiskCardProps> = ({ records }) =
               />
             </svg>
             <div className="absolute bottom-0 text-center">
-              <span className="text-lg font-bold font-mono tabular-nums text-white leading-none">
+              <span className="text-base font-bold font-mono tabular-nums text-white leading-none">
                 {severity.hospitalizationRatePct.toFixed(1)}%
               </span>
             </div>
@@ -104,42 +136,102 @@ export const SeverityRiskCard: React.FC<SeverityRiskCardProps> = ({ records }) =
         </div>
       </div>
 
-      {/* Clinical Classification Mix */}
-      <div className="pt-5 space-y-4 flex-1 flex flex-col justify-center">
-        <div className="w-full h-3.5 rounded-sm overflow-hidden flex bg-[#171a21]">
-          {classifications.map(item => (
-            <div
-              key={item.label}
-              className={`${item.barColor} h-full`}
-              style={{ width: `${item.pct}%` }}
-            />
-          ))}
-        </div>
+      {/* Clinical Classification & Case Classification Breakdowns */}
+      <div className="pt-4 space-y-5 flex-1 flex flex-col justify-center">
+        {/* Clinical Classification */}
+        <div className="space-y-3">
+          <div className="flex items-baseline justify-between">
+            <h4 className="text-xs font-semibold tracking-wide text-slate-200">
+              Clinical Classification
+            </h4>
+            <span className="text-[11px] font-mono tabular-nums text-slate-400">
+              DOH Severity Spectrum
+            </span>
+          </div>
 
-        <div className="space-y-4">
-          {classifications.map(item => (
-            <div key={item.label} className="space-y-1.5">
-              <div className="flex items-baseline justify-between gap-2">
-                <span className="text-xs font-semibold text-slate-100">
-                  {item.label}
-                </span>
-                <div className="text-right font-mono tabular-nums shrink-0">
-                  <span className={`text-sm font-bold ${item.textColor}`}>
-                    {item.count}
+          <div className="w-full h-2.5 rounded-sm overflow-hidden flex bg-[#171a21]">
+            {clinicalClassifications.map(item => (
+              <div
+                key={item.label}
+                className={`${item.barColor} h-full`}
+                style={{ width: `${item.pct}%` }}
+              />
+            ))}
+          </div>
+
+          <div className="space-y-2.5">
+            {clinicalClassifications.map(item => (
+              <div key={item.label} className="space-y-1">
+                <div className="flex items-baseline justify-between gap-2">
+                  <span className="text-xs font-medium text-slate-200">
+                    {item.label}
                   </span>
-                  <span className="text-xs text-slate-400 ml-1.5">
-                    ({item.pct.toFixed(1)}%)
-                  </span>
+                  <div className="text-right font-mono tabular-nums shrink-0">
+                    <span className={`text-xs font-bold ${item.textColor}`}>
+                      {item.count.toLocaleString()}
+                    </span>
+                    <span className="text-[11px] text-slate-400 ml-1.5">
+                      ({item.pct.toFixed(1)}%)
+                    </span>
+                  </div>
+                </div>
+                <div className="w-full h-1.5 bg-[#171a21] rounded-sm overflow-hidden">
+                  <div
+                    className={`${item.barColor} h-full`}
+                    style={{ width: `${item.pct}%` }}
+                  />
                 </div>
               </div>
-              <div className="w-full h-2 bg-[#171a21] rounded-sm overflow-hidden">
-                <div
-                  className={`${item.barColor} h-full`}
-                  style={{ width: `${item.pct}%` }}
-                />
+            ))}
+          </div>
+        </div>
+
+        {/* Case Classification */}
+        <div className="pt-4 border-t border-white/[0.08] space-y-3">
+          <div className="flex items-baseline justify-between">
+            <h4 className="text-xs font-semibold tracking-wide text-slate-200">
+              Case Classification
+            </h4>
+            <span className="text-[11px] font-mono tabular-nums text-emerald-300">
+              {severity.confirmed.pct.toFixed(1)}% lab confirmed
+            </span>
+          </div>
+
+          <div className="w-full h-2.5 rounded-sm overflow-hidden flex bg-[#171a21]">
+            {caseClassifications.map(item => (
+              <div
+                key={item.label}
+                className={`${item.barColor} h-full`}
+                style={{ width: `${item.pct}%` }}
+              />
+            ))}
+          </div>
+
+          <div className="space-y-2.5">
+            {caseClassifications.map(item => (
+              <div key={item.label} className="space-y-1">
+                <div className="flex items-baseline justify-between gap-2">
+                  <span className="text-xs font-medium text-slate-200">
+                    {item.label}
+                  </span>
+                  <div className="text-right font-mono tabular-nums shrink-0">
+                    <span className={`text-xs font-bold ${item.textColor}`}>
+                      {item.count.toLocaleString()}
+                    </span>
+                    <span className="text-[11px] text-slate-400 ml-1.5">
+                      ({item.pct.toFixed(1)}%)
+                    </span>
+                  </div>
+                </div>
+                <div className="w-full h-1.5 bg-[#171a21] rounded-sm overflow-hidden">
+                  <div
+                    className={`${item.barColor} h-full`}
+                    style={{ width: `${item.pct}%` }}
+                  />
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </div>
     </div>

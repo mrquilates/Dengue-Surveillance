@@ -52,29 +52,40 @@ export const MUNICIPALITY_POPULATIONS: Record<
   'Taytay': { population: 386451, psgc: '045813000', province: 'Rizal', region: 'Region IV-A', classification: '1st Class Municipality' },
   'Rodriguez': { population: 443954, psgc: '045808000', province: 'Rizal', region: 'Region IV-A', classification: '1st Class Municipality' },
   // Regional Metros & Provincial Municipalities
-  'Argao': { population: 78187, psgc: '072205000', province: 'Cebu', region: 'Region VII', classification: '1st Class Municipality' },
+  'Argao': { population: 79064, psgc: '072205000', province: 'Cebu', region: 'Region VII', classification: '1st Class Municipality' },
   'Cebu City': { population: 964169, psgc: '072217000', province: 'Cebu', region: 'Region VII', classification: 'Highly Urbanized City' },
   'Davao City': { population: 1776949, psgc: '112402000', province: 'Davao del Sur', region: 'Region XI', classification: 'Highly Urbanized City' },
 };
 
-// Granular Barangay-level Population Registry (PSA Census-aligned baseline for localized incidence)
+// Granular Barangay-level Population Registry (2026 Argao Municipal Registry & PSA Census baselines)
 export const BARANGAY_POPULATIONS: Record<
   string,
   { population: number; psgc: string; municipality: string; densityCategory: 'Hyper-Dense' | 'High-Density' | 'Moderate' | 'Rural/Peri-Urban' }
 > = {
-  // Argao, Cebu (Region VII - Central Visayas)
-  'Poblacion': { population: 6200, psgc: '072205026', municipality: 'Argao', densityCategory: 'High-Density' },
-  'Taloot': { population: 4800, psgc: '072205035', municipality: 'Argao', densityCategory: 'Moderate' },
-  'Bogo': { population: 4200, psgc: '072205009', municipality: 'Argao', densityCategory: 'Moderate' },
-  'Bulasa': { population: 4500, psgc: '072205011', municipality: 'Argao', densityCategory: 'Moderate' },
-  'Talaga': { population: 3800, psgc: '072205034', municipality: 'Argao', densityCategory: 'Moderate' },
-  'Canbanua': { population: 3500, psgc: '072205014', municipality: 'Argao', densityCategory: 'Moderate' },
-  'Lamacan': { population: 3200, psgc: '072205021', municipality: 'Argao', densityCategory: 'Moderate' },
-  'Langtad': { population: 3100, psgc: '072205022', municipality: 'Argao', densityCategory: 'Moderate' },
-  'Casay': { population: 2800, psgc: '072205017', municipality: 'Argao', densityCategory: 'Moderate' },
-  'Colawin': { population: 2400, psgc: '072205018', municipality: 'Argao', densityCategory: 'Moderate' },
-  'Alambijud': { population: 2100, psgc: '072205001', municipality: 'Argao', densityCategory: 'Rural/Peri-Urban' },
-  'Ubaub': { population: 1900, psgc: '072205044', municipality: 'Argao', densityCategory: 'Rural/Peri-Urban' },
+  // Argao, Cebu (Region VII - Central Visayas, Total 2026 Pop: 79,064)
+  'Poblacion': { population: 5911, psgc: '072205034', municipality: 'Argao', densityCategory: 'High-Density' },
+  'Talo-ot': { population: 4322, psgc: '072205040', municipality: 'Argao', densityCategory: 'Moderate' },
+  'Taloot': { population: 4322, psgc: '072205040', municipality: 'Argao', densityCategory: 'Moderate' },
+  'Binlod': { population: 4297, psgc: '072205006', municipality: 'Argao', densityCategory: 'Moderate' },
+  'Bogo': { population: 4020, psgc: '072205007', municipality: 'Argao', densityCategory: 'Moderate' },
+  'Talaga': { population: 3975, psgc: '072205038', municipality: 'Argao', densityCategory: 'Moderate' },
+  'Bulasa': { population: 3971, psgc: '072205009', municipality: 'Argao', densityCategory: 'Moderate' },
+  'Langtad': { population: 3549, psgc: '072205025', municipality: 'Argao', densityCategory: 'Moderate' },
+  'Tulic': { population: 3134, psgc: '072205043', municipality: 'Argao', densityCategory: 'Moderate' },
+  'Canbanua': { population: 2934, psgc: '072205013', municipality: 'Argao', densityCategory: 'Moderate' },
+  'Jampang': { population: 2925, psgc: '072205022', municipality: 'Argao', densityCategory: 'Moderate' },
+  'Lamacan': { population: 2764, psgc: '072205024', municipality: 'Argao', densityCategory: 'Moderate' },
+  'Cansuje': { population: 2630, psgc: '072205014', municipality: 'Argao', densityCategory: 'Moderate' },
+  'Balisong': { population: 2345, psgc: '072205005', municipality: 'Argao', densityCategory: 'Moderate' },
+  'Talaytay': { population: 2089, psgc: '072205039', municipality: 'Argao', densityCategory: 'Moderate' },
+  'Guiwanon': { population: 1794, psgc: '072205020', municipality: 'Argao', densityCategory: 'Moderate' },
+  'Alambijud': { population: 1638, psgc: '072205001', municipality: 'Argao', densityCategory: 'Rural/Peri-Urban' },
+  'Mabasa': { population: 1523, psgc: '072205030', municipality: 'Argao', densityCategory: 'Rural/Peri-Urban' },
+  'Lengigon': { population: 1342, psgc: '072205028', municipality: 'Argao', densityCategory: 'Rural/Peri-Urban' },
+  'Colawin': { population: 1306, psgc: '072205018', municipality: 'Argao', densityCategory: 'Rural/Peri-Urban' },
+  'Usmad': { population: 1269, psgc: '072205045', municipality: 'Argao', densityCategory: 'Rural/Peri-Urban' },
+  'Ubaub': { population: 1195, psgc: '072205044', municipality: 'Argao', densityCategory: 'Rural/Peri-Urban' },
+  'Casay': { population: 1158, psgc: '072205016', municipality: 'Argao', densityCategory: 'Rural/Peri-Urban' },
   // Quezon City
   'Batasan Hills': { population: 166486, psgc: '137404001', municipality: 'Quezon City', densityCategory: 'Hyper-Dense' },
   'Commonwealth': { population: 213229, psgc: '137404002', municipality: 'Quezon City', densityCategory: 'Hyper-Dense' },
@@ -182,15 +193,21 @@ export function calculateEpidemiologicalMetrics(
       cfr: 0,
       hospitalizationRate: 0,
       hospitalizedCount: 0,
+      outpatientCount: 0,
       attackRatePer100k: 0,
       totalPopulation: 1000000,
       overallIncidencePer100k: 0,
-      reportingDelayMeanDays: 2.4,
-      reportingDelayMedianDays: 2.0,
-      onsetToConsultationDaysMean: 2.4,
-      onsetToConsultationDaysMedian: 2.0,
-      onsetToAdmissionDaysMean: 2.7,
-      onsetToAdmissionDaysMedian: 2.5,
+      reportingDelayMeanDays: 0,
+      reportingDelayMedianDays: 0,
+      onsetToConsultationDaysMean: 0,
+      onsetToConsultationDaysMedian: 0,
+      onsetToAdmissionDaysMean: 0,
+      onsetToAdmissionDaysMedian: 0,
+      consultDelayEvaluatedCount: 0,
+      earlyConsultationCount: 0,
+      earlyConsultationRatePct: 0,
+      delayedConsultationCount: 0,
+      delayedConsultationRatePct: 0,
       latestMorbidityWeek: 1,
       latestMorbidityYear: new Date().getFullYear(),
     };
@@ -222,6 +239,7 @@ export function calculateEpidemiologicalMetrics(
   const cfr = totalCases > 0 ? Math.round((deaths / totalCases) * 10000) / 100 : 0;
 
   const hospitalizedCount = activeValid.filter(r => r.admitted === 'Y').length;
+  const outpatientCount = Math.max(0, totalCases - hospitalizedCount);
   const hospitalizationRate =
     totalCases > 0 ? Math.round((hospitalizedCount / totalCases) * 1000) / 10 : 0;
 
@@ -234,39 +252,61 @@ export function calculateEpidemiologicalMetrics(
   const overallIncidencePer100k = Math.round((totalCases / totalPopulation) * 100000 * 10) / 10;
   const attackRatePer100k = Math.round((latestMWCases / totalPopulation) * 100000 * 10) / 10;
 
-  // Calculate Onset to Consultation interval (days)
+  // Calculate Onset to Consultation interval (health-seeking delay in days)
   const consultIntervals = activeValid
     .map(r => {
       if (r.dateOnset && r.dateConsult) {
-        const diff = (new Date(r.dateConsult).getTime() - new Date(r.dateOnset).getTime()) / (1000 * 3600 * 24);
+        const diff = Math.round(
+          (new Date(r.dateConsult).getTime() - new Date(r.dateOnset).getTime()) / (1000 * 3600 * 24)
+        );
         if (!isNaN(diff) && diff >= 0 && diff <= 60) return diff;
       }
       return null;
     })
     .filter((v): v is number => v !== null);
 
+  const consultDelayEvaluatedCount = consultIntervals.length;
+  const earlyConsultationCount = consultIntervals.filter(d => d <= 2).length;
+  const delayedConsultationCount = consultIntervals.filter(d => d > 3).length;
+  const earlyConsultationRatePct =
+    consultDelayEvaluatedCount > 0
+      ? Math.round((earlyConsultationCount / consultDelayEvaluatedCount) * 1000) / 10
+      : 0;
+  const delayedConsultationRatePct =
+    consultDelayEvaluatedCount > 0
+      ? Math.round((delayedConsultationCount / consultDelayEvaluatedCount) * 1000) / 10
+      : 0;
+
   const onsetToConsultationDaysMean =
     consultIntervals.length > 0
       ? Math.round((consultIntervals.reduce((a, b) => a + b, 0) / consultIntervals.length) * 10) / 10
-      : 2.4;
+      : 0;
 
   const sortedConsultIntervals = [...consultIntervals].sort((a, b) => a - b);
+  const consultMid = Math.floor(sortedConsultIntervals.length / 2);
   const onsetToConsultationDaysMedian =
-    sortedConsultIntervals.length > 0
-      ? sortedConsultIntervals[Math.floor(sortedConsultIntervals.length / 2)]
-      : 2.0;
+    sortedConsultIntervals.length === 0
+      ? 0
+      : sortedConsultIntervals.length % 2 !== 0
+      ? sortedConsultIntervals[consultMid]
+      : Math.round(
+          ((sortedConsultIntervals[consultMid - 1] + sortedConsultIntervals[consultMid]) / 2) * 10
+        ) / 10;
 
   // Calculate Onset to Admission interval (days)
   const admitIntervals = activeValid
     .map(r => {
       if (r.dateOnset && r.dateAdmit) {
-        const diff = (new Date(r.dateAdmit).getTime() - new Date(r.dateOnset).getTime()) / (1000 * 3600 * 24);
+        const diff = Math.round(
+          (new Date(r.dateAdmit).getTime() - new Date(r.dateOnset).getTime()) / (1000 * 3600 * 24)
+        );
         if (!isNaN(diff) && diff >= 0 && diff <= 60) return diff;
       }
-      // If admitted is Y and dateConsult is present, fallback to consult interval + 0.5
       if (r.admitted === 'Y' && r.dateOnset && r.dateConsult) {
-        const diff = (new Date(r.dateConsult).getTime() - new Date(r.dateOnset).getTime()) / (1000 * 3600 * 24);
-        if (!isNaN(diff) && diff >= 0) return diff;
+        const diff = Math.round(
+          (new Date(r.dateConsult).getTime() - new Date(r.dateOnset).getTime()) / (1000 * 3600 * 24)
+        );
+        if (!isNaN(diff) && diff >= 0 && diff <= 60) return diff;
       }
       return null;
     })
@@ -275,13 +315,18 @@ export function calculateEpidemiologicalMetrics(
   const onsetToAdmissionDaysMean =
     admitIntervals.length > 0
       ? Math.round((admitIntervals.reduce((a, b) => a + b, 0) / admitIntervals.length) * 10) / 10
-      : 2.7;
+      : 0;
 
   const sortedAdmitIntervals = [...admitIntervals].sort((a, b) => a - b);
+  const admitMid = Math.floor(sortedAdmitIntervals.length / 2);
   const onsetToAdmissionDaysMedian =
-    sortedAdmitIntervals.length > 0
-      ? sortedAdmitIntervals[Math.floor(sortedAdmitIntervals.length / 2)]
-      : 2.5;
+    sortedAdmitIntervals.length === 0
+      ? 0
+      : sortedAdmitIntervals.length % 2 !== 0
+      ? sortedAdmitIntervals[admitMid]
+      : Math.round(
+          ((sortedAdmitIntervals[admitMid - 1] + sortedAdmitIntervals[admitMid]) / 2) * 10
+        ) / 10;
 
   return {
     totalCases,
@@ -297,6 +342,7 @@ export function calculateEpidemiologicalMetrics(
     cfr,
     hospitalizationRate,
     hospitalizedCount,
+    outpatientCount,
     attackRatePer100k,
     totalPopulation,
     overallIncidencePer100k,
@@ -306,6 +352,11 @@ export function calculateEpidemiologicalMetrics(
     onsetToConsultationDaysMedian,
     onsetToAdmissionDaysMean,
     onsetToAdmissionDaysMedian,
+    consultDelayEvaluatedCount,
+    earlyConsultationCount,
+    earlyConsultationRatePct,
+    delayedConsultationCount,
+    delayedConsultationRatePct,
     latestMorbidityWeek: latestMW,
     latestMorbidityYear: latestMY,
   };
@@ -1526,59 +1577,118 @@ export function getMultiStreamTimeline(records: SurveillanceRecord[]): MultiStre
 // BI Infographic Standard Aggregators (Argao, Cebu - 45 Barangays & MW 1-46)
 // ============================================================================
 
-export const ARGAO_45_BARANGAYS: Array<{ name: string; psgc: string; population: number }> = [
-  { name: 'Poblacion', psgc: '072205034', population: 6200 },
-  { name: 'Balisong', psgc: '072205005', population: 3150 },
-  { name: 'Talaga', psgc: '072205038', population: 3800 },
-  { name: 'Canbanua', psgc: '072205013', population: 3500 },
-  { name: 'Talo-ot', psgc: '072205040', population: 4800 },
-  { name: 'Bogo', psgc: '072205007', population: 4200 },
-  { name: 'Bulasa', psgc: '072205009', population: 4500 },
-  { name: 'Lamacan', psgc: '072205024', population: 3200 },
-  { name: 'Langtad', psgc: '072205025', population: 3100 },
-  { name: 'Tulic', psgc: '072205043', population: 2950 },
-  { name: 'Binlod', psgc: '072205006', population: 2680 },
-  { name: 'Casay', psgc: '072205016', population: 2800 },
-  { name: 'Colawin', psgc: '072205018', population: 2400 },
-  { name: 'Alambijud', psgc: '072205001', population: 2100 },
-  { name: 'Ubaub', psgc: '072205044', population: 1900 },
-  { name: 'Guiwanon', psgc: '072205020', population: 2250 },
-  { name: 'Panadtaran', psgc: '072205033', population: 2050 },
-  { name: 'Mandilikit', psgc: '072205031', population: 1620 },
-  { name: 'Lengigon', psgc: '072205028', population: 1740 },
-  { name: 'Jampang', psgc: '072205022', population: 1850 },
-  { name: 'Jomgao', psgc: '072205023', population: 1580 },
-  { name: 'Mabasa', psgc: '072205030', population: 1320 },
-  { name: 'Sumaguan', psgc: '072205036', population: 1480 },
-  { name: 'Linut-od', psgc: '072205029', population: 1410 },
-  { name: 'Butong', psgc: '072205010', population: 1290 },
-  { name: 'Catang', psgc: '072205017', population: 1180 },
-  { name: 'Cansuje', psgc: '072205014', population: 1120 },
-  { name: 'Anajao', psgc: '072205002', population: 1090 },
-  { name: 'Apo', psgc: '072205003', population: 1050 },
-  { name: 'Balaas', psgc: '072205004', population: 1150 },
-  { name: 'Bug-ot', psgc: '072205008', population: 1210 },
-  { name: 'Calagasan', psgc: '072205011', population: 1140 },
-  { name: 'Canbantug', psgc: '072205012', population: 1260 },
-  { name: 'Capio-an', psgc: '072205015', population: 1380 },
-  { name: 'Conalum', psgc: '072205019', population: 1020 },
-  { name: 'Gutlang', psgc: '072205021', population: 1340 },
-  { name: 'Langub', psgc: '072205026', population: 1190 },
-  { name: 'Lapay', psgc: '072205027', population: 980 },
-  { name: 'Montpellier', psgc: '072205032', population: 1220 },
-  { name: 'Sua', psgc: '072205035', population: 1160 },
-  { name: 'Tabayag', psgc: '072205037', population: 1070 },
-  { name: 'Talaytay', psgc: '072205039', population: 1430 },
-  { name: 'Tiguib', psgc: '072205041', population: 1310 },
-  { name: 'Tulang', psgc: '072205042', population: 1110 },
-  { name: 'Usmad', psgc: '072205045', population: 1520 },
+export const ARGAO_AGE_SEX_POPULATION_2026: Array<{
+  cohort: string;
+  label: string;
+  male: number;
+  female: number;
+  total: number;
+  pct: number;
+}> = [
+  { cohort: '<1', label: '<1 Year', male: 429, female: 393, total: 822, pct: 1.04 },
+  { cohort: '1-4', label: '1–4 Years', male: 2264, female: 2150, total: 4414, pct: 5.58 },
+  { cohort: '5-9', label: '5–9 Years', male: 3532, female: 3344, total: 6876, pct: 8.70 },
+  { cohort: '10-14', label: '10–14 Years', male: 3934, female: 3489, total: 7423, pct: 9.39 },
+  { cohort: '15-19', label: '15–19 Years', male: 3779, female: 3479, total: 7258, pct: 9.18 },
+  { cohort: '20-24', label: '20–24 Years', male: 3382, female: 3104, total: 6486, pct: 8.20 },
+  { cohort: '25-29', label: '25–29 Years', male: 3125, female: 3137, total: 6262, pct: 7.92 },
+  { cohort: '30-34', label: '30–34 Years', male: 3377, female: 3102, total: 6479, pct: 8.19 },
+  { cohort: '35-39', label: '35–39 Years', male: 2980, female: 2782, total: 5762, pct: 7.29 },
+  { cohort: '40-44', label: '40–44 Years', male: 2590, female: 2276, total: 4866, pct: 6.15 },
+  { cohort: '45-49', label: '45–49 Years', male: 2395, female: 2146, total: 4541, pct: 5.74 },
+  { cohort: '50-54', label: '50–54 Years', male: 2117, female: 1959, total: 4076, pct: 5.16 },
+  { cohort: '55-59', label: '55–59 Years', male: 1934, female: 1713, total: 3647, pct: 4.61 },
+  { cohort: '60-64', label: '60–64 Years', male: 1934, female: 2228, total: 4162, pct: 5.26 },
+  { cohort: '65-69', label: '65–69 Years', male: 1402, female: 1643, total: 3045, pct: 3.85 },
+  { cohort: '≥70', label: '70+ Years', male: 1313, female: 1632, total: 2945, pct: 3.73 },
+];
+
+export const ARGAO_TOTAL_POPULATION_2026 = 79064;
+export const ARGAO_MALE_POPULATION_2026 = 40487;
+export const ARGAO_FEMALE_POPULATION_2026 = 38577;
+
+export function getDetailedAgeBracket(age: number | null, fallbackAgeGroup?: string): string {
+  if (age !== null && !isNaN(age)) {
+    if (age < 1) return '<1';
+    if (age <= 4) return '1-4';
+    if (age <= 9) return '5-9';
+    if (age <= 14) return '10-14';
+    if (age <= 19) return '15-19';
+    if (age <= 24) return '20-24';
+    if (age <= 29) return '25-29';
+    if (age <= 34) return '30-34';
+    if (age <= 39) return '35-39';
+    if (age <= 44) return '40-44';
+    if (age <= 49) return '45-49';
+    if (age <= 54) return '50-54';
+    if (age <= 59) return '55-59';
+    if (age <= 64) return '60-64';
+    if (age <= 69) return '65-69';
+    return '≥70';
+  }
+  switch (fallbackAgeGroup) {
+    case '20-29': return '20-24';
+    case '30-39': return '30-34';
+    case '40-49': return '40-44';
+    case '50-59': return '50-54';
+    case '60-69': return '60-64';
+    default: return fallbackAgeGroup || 'Unknown';
+  }
+}
+
+export const ARGAO_45_BARANGAYS: Array<{ name: string; psgc: string; population: number; households: number }> = [
+  { name: 'Alambijud', psgc: '072205001', population: 1638, households: 422 },
+  { name: 'Anajao', psgc: '072205002', population: 846, households: 223 },
+  { name: 'Apo', psgc: '072205003', population: 599, households: 171 },
+  { name: 'Balaas', psgc: '072205004', population: 786, households: 189 },
+  { name: 'Balisong', psgc: '072205005', population: 2345, households: 583 },
+  { name: 'Binlod', psgc: '072205006', population: 4297, households: 1060 },
+  { name: 'Bogo', psgc: '072205007', population: 4020, households: 1052 },
+  { name: 'Butong', psgc: '072205010', population: 1006, households: 293 },
+  { name: 'Bug-ot', psgc: '072205008', population: 852, households: 227 },
+  { name: 'Bulasa', psgc: '072205009', population: 3971, households: 1234 },
+  { name: 'Calagasan', psgc: '072205011', population: 1066, households: 266 },
+  { name: 'Canbantug', psgc: '072205012', population: 918, households: 251 },
+  { name: 'Canbanua', psgc: '072205013', population: 2934, households: 762 },
+  { name: 'Cansuje', psgc: '072205014', population: 2630, households: 701 },
+  { name: 'Capio-an', psgc: '072205015', population: 1045, households: 358 },
+  { name: 'Casay', psgc: '072205016', population: 1158, households: 278 },
+  { name: 'Catang', psgc: '072205017', population: 623, households: 174 },
+  { name: 'Colawin', psgc: '072205018', population: 1306, households: 363 },
+  { name: 'Conalum', psgc: '072205019', population: 552, households: 153 },
+  { name: 'Guiwanon', psgc: '072205020', population: 1794, households: 458 },
+  { name: 'Gutlang', psgc: '072205021', population: 802, households: 222 },
+  { name: 'Jampang', psgc: '072205022', population: 2925, households: 786 },
+  { name: 'Jomgao', psgc: '072205023', population: 901, households: 246 },
+  { name: 'Lamacan', psgc: '072205024', population: 2764, households: 758 },
+  { name: 'Langtad', psgc: '072205025', population: 3549, households: 928 },
+  { name: 'Langub', psgc: '072205026', population: 701, households: 198 },
+  { name: 'Lapay', psgc: '072205027', population: 527, households: 130 },
+  { name: 'Lengigon', psgc: '072205028', population: 1342, households: 339 },
+  { name: 'Linut-od', psgc: '072205029', population: 1019, households: 264 },
+  { name: 'Mabasa', psgc: '072205030', population: 1523, households: 405 },
+  { name: 'Mandilikit', psgc: '072205031', population: 720, households: 220 },
+  { name: 'Mompeller', psgc: '072205032', population: 1008, households: 247 },
+  { name: 'Panadtaran', psgc: '072205033', population: 640, households: 179 },
+  { name: 'Poblacion', psgc: '072205034', population: 5911, households: 1585 },
+  { name: 'Sua', psgc: '072205035', population: 756, households: 200 },
+  { name: 'Sumaguan', psgc: '072205036', population: 1069, households: 320 },
+  { name: 'Tabayag', psgc: '072205037', population: 904, households: 242 },
+  { name: 'Talaga', psgc: '072205038', population: 3975, households: 1049 },
+  { name: 'Talaytay', psgc: '072205039', population: 2089, households: 578 },
+  { name: 'Talo-ot', psgc: '072205040', population: 4322, households: 1143 },
+  { name: 'Tiguib', psgc: '072205041', population: 997, households: 260 },
+  { name: 'Tulang', psgc: '072205042', population: 636, households: 169 },
+  { name: 'Tulic', psgc: '072205043', population: 3134, households: 874 },
+  { name: 'Ubaub', psgc: '072205044', population: 1195, households: 350 },
+  { name: 'Usmad', psgc: '072205045', population: 1269, households: 366 },
 ];
 
 export function normalizeArgaoBarangayName(raw: string): string {
   const cleaned = (raw || '').trim();
   const lower = cleaned.toLowerCase();
   if (lower === 'taloot' || lower === 'talu-ot' || lower === 'taloot ') return 'Talo-ot';
-  if (lower === 'mompeller' || lower === 'montpellier') return 'Montpellier';
+  if (lower === 'mompeller' || lower === 'montpellier') return 'Mompeller';
   if (lower === 'casirad') return 'Casay';
   return cleaned;
 }
@@ -1650,6 +1760,21 @@ export function calculateFullYearEpiChannel(
   return result;
 }
 
+export type BarangayRiskLevel = 'Critical' | 'High' | 'Moderate' | 'Low' | 'No Case';
+
+export function classifyBarangayRiskLevel(
+  totalCases: number,
+  attackRatePer1000: number | null,
+  isVitalFew80: boolean
+): BarangayRiskLevel {
+  if (totalCases <= 0) return 'No Case';
+  const ar = attackRatePer1000 ?? 0;
+  if (ar >= 10 && isVitalFew80) return 'Critical';
+  if (ar >= 10 || (ar >= 5 && isVitalFew80)) return 'High';
+  if (ar >= 5 || isVitalFew80) return 'Moderate';
+  return 'Low';
+}
+
 export interface BarangayHeatmapParetoRow {
   rank: number;
   name: string;
@@ -1664,7 +1789,7 @@ export interface BarangayHeatmapParetoRow {
   sharePct: number;
   cumulativeParetoPct: number;
   isVitalFew80: boolean;
-  hotspotTier: 'Persistent' | 'Emerging' | 'Controlled' | 'Sporadic' | 'Zero Case';
+  riskLevel: BarangayRiskLevel;
 }
 
 export function calculateBarangayHeatmapPareto(
@@ -1745,22 +1870,9 @@ export function calculateBarangayHeatmapPareto(
       else sevenWeekTrend = 'Stable';
     }
 
-    // Hotspot classification
-    const recentActiveWeeks = sevenWeekCounts.slice(-3).filter(c => c > 0).length;
-    let hotspotTier: BarangayHeatmapParetoRow['hotspotTier'] = 'Zero Case';
-    if (entry.ytdCases === 0) {
-      hotspotTier = 'Zero Case';
-    } else if (recentActiveWeeks >= 2 && entry.ytdCases >= 5) {
-      hotspotTier = 'Persistent';
-    } else if (sevenWeekCounts[6] > 0 && sevenWeekCounts[5] === 0) {
-      hotspotTier = 'Emerging';
-    } else if (entry.ytdCases >= 4 && recentActiveWeeks === 0) {
-      hotspotTier = 'Controlled';
-    } else {
-      hotspotTier = 'Sporadic';
-    }
-
     const attackRatePer1000 = Math.round((entry.ytdCases / Math.max(entry.population, 500)) * 1000 * 100) / 100;
+    const isVitalFew80 = entry.ytdCases > 0 && cumulativeParetoPct <= 82;
+    const riskLevel = classifyBarangayRiskLevel(entry.ytdCases, attackRatePer1000, isVitalFew80);
 
     return {
       rank: idx + 1,
@@ -1775,8 +1887,8 @@ export function calculateBarangayHeatmapPareto(
       attackRatePer1000,
       sharePct: Math.round(sharePct * 10) / 10,
       cumulativeParetoPct: Math.round(cumulativeParetoPct * 10) / 10,
-      isVitalFew80: entry.ytdCases > 0 && cumulativeParetoPct <= 82,
-      hotspotTier,
+      isVitalFew80,
+      riskLevel,
     };
   });
 
@@ -1787,6 +1899,9 @@ export interface ClinicalSeveritySummary {
   withoutWarningSigns: { count: number; pct: number };
   withWarningSigns: { count: number; pct: number };
   severeDengue: { count: number; pct: number };
+  confirmed: { count: number; pct: number };
+  probable: { count: number; pct: number };
+  suspect: { count: number; pct: number };
   totalClassified: number;
   hospitalizedCount: number;
   hospitalizationRatePct: number;
@@ -1802,6 +1917,9 @@ export function calculateClinicalSeverityBreakdown(
   let withoutWarning = 0;
   let withWarning = 0;
   let severe = 0;
+  let confirmed = 0;
+  let probable = 0;
+  let suspect = 0;
   let hospitalized = 0;
 
   active.forEach(r => {
@@ -1818,6 +1936,14 @@ export function calculateClinicalSeverityBreakdown(
     } else {
       withoutWarning++;
     }
+
+    if (r.caseClassification === 'Confirmed') {
+      confirmed++;
+    } else if (r.caseClassification === 'Probable') {
+      probable++;
+    } else {
+      suspect++;
+    }
   });
 
   const denom = total || 1;
@@ -1833,6 +1959,18 @@ export function calculateClinicalSeverityBreakdown(
     severeDengue: {
       count: severe,
       pct: Math.round((severe / denom) * 1000) / 10,
+    },
+    confirmed: {
+      count: confirmed,
+      pct: Math.round((confirmed / denom) * 1000) / 10,
+    },
+    probable: {
+      count: probable,
+      pct: Math.round((probable / denom) * 1000) / 10,
+    },
+    suspect: {
+      count: suspect,
+      pct: Math.round((suspect / denom) * 1000) / 10,
     },
     totalClassified: total,
     hospitalizedCount: hospitalized,

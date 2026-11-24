@@ -276,6 +276,12 @@ export interface EpidemiologicalMetrics {
   onsetToConsultationDaysMedian: number;
   onsetToAdmissionDaysMean: number;
   onsetToAdmissionDaysMedian: number;
+  consultDelayEvaluatedCount?: number;
+  earlyConsultationCount?: number;
+  earlyConsultationRatePct?: number;
+  delayedConsultationCount?: number;
+  delayedConsultationRatePct?: number;
+  outpatientCount?: number;
   latestMorbidityWeek: number;
   latestMorbidityYear: number;
 }

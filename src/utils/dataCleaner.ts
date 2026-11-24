@@ -63,7 +63,6 @@ const COLUMN_ALIASES: Record<string, string[]> = {
     'disease id',
     'disease_id',
     'diseaseid',
-    'disease',
     'disease name',
     'disease_name',
     'dx_code',
@@ -76,11 +75,11 @@ const COLUMN_ALIASES: Record<string, string[]> = {
     'epiid',
     'epi_id',
     'epi id',
-    'case_id',
     'surveillance_id',
+    'case_id',
+    'case id',
     'caseid',
     'patient_id',
-    'id',
     'case code',
     'case_code',
     'system code',
@@ -88,27 +87,40 @@ const COLUMN_ALIASES: Record<string, string[]> = {
     'case number',
     'caseno',
     'patient code',
+    'id',
   ],
   age: [
     'age at onset',
     'age_onset',
-    'age',
-    'age_years',
     'ageyears',
+    'age_years',
     'age in years',
     'age (years)',
     'age_at_onset',
     'onset_age',
     'ageyrs',
+    'age',
   ],
   sex: ['sex (m/f)', 'sex', 'gender', 'm/f', 'patient_sex', 'sex_mf', 'patient sex', 'sex (male/female)'],
-  psgcMunicipality: ['psgc_municipality', 'psgc_muni', 'municipality_psgc', 'muni_psgc', 'psgc_city', 'muni_code'],
+  psgcMunicipality: [
+    'psgc_municipality',
+    'currentaddress muncity psgc',
+    'currentaddress_muncity_psgc',
+    'psgc_muni',
+    'municipality_psgc',
+    'muni_psgc',
+    'psgc_city',
+    'muni_code',
+  ],
   municipality: [
+    '(current address) city / municipality',
     'municipality (current)',
     'municipality',
     'city/municipality',
-    'muni',
+    'city / municipality',
     'city_municipality',
+    'current_municipality',
+    'muni',
     'city',
     'town',
     'municity',
@@ -116,10 +128,19 @@ const COLUMN_ALIASES: Record<string, string[]> = {
     'munname',
     'address_muni',
     'permanent_muni',
-    'current_municipality',
   ],
-  psgcBarangay: ['psgc_barangay', 'psgc_brgy', 'barangay_psgc', 'brgy_psgc', 'bgy_code', 'brgy_code'],
+  psgcBarangay: [
+    'psgc_barangay',
+    'currentaddress brgy psgc',
+    'currentaddress_brgy_psgc',
+    'psgc_brgy',
+    'barangay_psgc',
+    'brgy_psgc',
+    'bgy_code',
+    'brgy_code',
+  ],
   barangay: [
+    '(current address) barangay',
     'barangay (current)',
     'barangay',
     'brgy',
@@ -134,31 +155,32 @@ const COLUMN_ALIASES: Record<string, string[]> = {
   ],
   dateOnset: [
     'date onset of first symptoms',
+    'donset',
     'date_onset',
     'date onset',
     'onset_date',
     'symptom_onset_date',
-    'onset',
     'date_of_onset',
     'date of onset',
     'dateonset',
     'first_symptom_date',
+    'onset',
   ],
   morbidityWeek: [
-    'morbidity week',
     'mw (morbidity week)',
+    'morbidity week',
     'mw',
     'morbidity_week',
     'morbidityweek',
     'epi week',
     'epi_week',
     'epiweek',
-    'week',
     'morbidity week (mw)',
     'mw_integer',
     'epi_week_num',
     'week_number',
     'surveillance_week',
+    'week',
   ],
   dateConsult: [
     'date consulted',
@@ -194,6 +216,7 @@ const COLUMN_ALIASES: Record<string, string[]> = {
   ],
   clinicalClassification: [
     'clinical classification',
+    'clinclass',
     'clinical_classification',
     'clinical_type',
     'clinical_subgroup',
@@ -215,6 +238,7 @@ const COLUMN_ALIASES: Record<string, string[]> = {
   ],
   dateAdmit: [
     'date admitted',
+    'dadmit',
     'date_admitted',
     'dateadmitted',
     'date_admit',
@@ -224,11 +248,11 @@ const COLUMN_ALIASES: Record<string, string[]> = {
   nameOfDru: [
     'nameofdru',
     'name of dru',
-    'dru',
-    'hospital',
+    'reporting dru',
     'health facility',
     'facility name',
-    'reporting dru',
+    'hospital',
+    'dru',
   ],
   placeConsulted: [
     'place consulted',
@@ -251,7 +275,7 @@ const COLUMN_ALIASES: Record<string, string[]> = {
   labTestType: ['type of test conducted', 'test type', 'diagnostic test', 'type_of_test_conducted'],
 };
 
-// Map raw headers to internal keys
+// Map raw headers to internal keys (2-pass priority: exact normalized match before safe substring match)
 export function detectSchemaMapping(headers: string[]): {
   mapping: Record<string, string>; // internalKey -> rawHeader
   missingStandard: string[];
@@ -260,13 +284,46 @@ export function detectSchemaMapping(headers: string[]): {
 } {
   const mapping: Record<string, string> = {};
   const matchedHeaders = new Set<string>();
+  const normalizedHeaders = headers.map(raw => ({
+    raw,
+    norm: raw.toLowerCase().trim().replace(/[_\-\s]+/g, ' '),
+  }));
 
+  const isMetadataTimestampCol = (norm: string) =>
+    norm.startsWith('timestamp') ||
+    norm.startsWith('lastmodified') ||
+    norm.startsWith('timelapse') ||
+    norm.includes('dru');
+
+  // Pass 1: Exact normalized match across aliases in priority order
   for (const [key, aliases] of Object.entries(COLUMN_ALIASES)) {
-    for (const rawHeader of headers) {
-      const normalized = rawHeader.toLowerCase().trim().replace(/[_\-\s]+/g, ' ');
-      if (aliases.some(alias => normalized === alias || normalized.includes(alias))) {
-        mapping[key] = rawHeader;
-        matchedHeaders.add(rawHeader);
+    for (const alias of aliases) {
+      const hit = normalizedHeaders.find(
+        h => !matchedHeaders.has(h.raw) && h.norm === alias
+      );
+      if (hit) {
+        mapping[key] = hit.raw;
+        matchedHeaders.add(hit.raw);
+        break;
+      }
+    }
+  }
+
+  // Pass 2: Safe substring fallback for remaining unmapped keys (skip short/ambiguous aliases and timestamp columns)
+  for (const [key, aliases] of Object.entries(COLUMN_ALIASES)) {
+    if (mapping[key]) continue;
+    for (const alias of aliases) {
+      if (alias.length < 4) continue;
+      const hit = normalizedHeaders.find(h => {
+        if (matchedHeaders.has(h.raw)) return false;
+        if (key !== 'timelapseOnsetEncode' && key !== 'timelapseEncodeValidated' && key !== 'nameOfDru' && isMetadataTimestampCol(h.norm)) {
+          return false;
+        }
+        return h.norm.includes(alias);
+      });
+      if (hit) {
+        mapping[key] = hit.raw;
+        matchedHeaders.add(hit.raw);
         break;
       }
     }
@@ -310,6 +367,19 @@ export function parseDateToISO(val: any): { iso: string | null; error: string | 
     const d = parseInt(mdyMatch[2], 10);
     const y = parseInt(mdyMatch[3], 10);
     // If month > 12 and day <= 12, likely DD/MM/YYYY
+    if (m > 12 && d <= 12) {
+      return validateDateParts(y, d, m);
+    }
+    return validateDateParts(y, m, d);
+  }
+
+  // 3. MM/DD/YY or M/D/YY (common in DOH PIDSR CSV exports)
+  const mdyShortMatch = str.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{2})(?:\s.*)?$/);
+  if (mdyShortMatch) {
+    const m = parseInt(mdyShortMatch[1], 10);
+    const d = parseInt(mdyShortMatch[2], 10);
+    const yy = parseInt(mdyShortMatch[3], 10);
+    const y = yy <= 30 ? 2000 + yy : 1900 + yy;
     if (m > 12 && d <= 12) {
       return validateDateParts(y, d, m);
     }
@@ -441,17 +511,34 @@ export function processRawSurveillanceCSV(
     });
   };
 
-  const parsed = Papa.parse(csvText, {
+  // Fast pre-trim for spreadsheet exports padded with thousands of trailing Column1..ColumnN empty columns
+  let normalizedCsvText = csvText;
+  const firstNewlineIdx = csvText.indexOf('\n');
+  if (firstNewlineIdx !== -1) {
+    const headerLine = csvText.slice(0, firstNewlineIdx).replace(/\r$/, '');
+    const col1MarkerIdx = headerLine.indexOf(',Column1,');
+    if (col1MarkerIdx !== -1) {
+      const trimmedHeader = headerLine.slice(0, col1MarkerIdx);
+      const restLines = csvText
+        .slice(firstNewlineIdx + 1)
+        .split(/\r?\n/)
+        .filter(l => l.trim().length > 0)
+        .map(l => l.replace(/,+$/, ''));
+      normalizedCsvText = [trimmedHeader, ...restLines].join('\n');
+    }
+  }
+
+  const parsed = Papa.parse(normalizedCsvText, {
     header: true,
     skipEmptyLines: true,
     transformHeader: h => h.trim(),
   });
 
-  const rawHeaders = parsed.meta.fields || [];
+  const rawHeaders = (parsed.meta.fields || []).filter(h => !/^Column\d+$/i.test(h));
   const { mapping, missingStandard, unexpected, confidence } = detectSchemaMapping(rawHeaders);
 
   // DATA PRIVACY ACT OF 2012 (RA 10173) COMPLIANCE:
-  // Identify and strip all personal name identifying columns upon data ingestion
+  // Identify and strip all personal name and direct identifying columns upon data ingestion
   const PII_NAME_PATTERNS = [
     /^(first|given|fore)\s*name$/i,
     /^fname$/i,
@@ -463,6 +550,9 @@ export function processRawSurveillanceCSV(
     /^lname$/i,
     /^(suffix|ext|extension)(\s*name)?$/i,
     /^(full\s*name|patient\s*name|name)$/i,
+    /^patient\s*number$/i,
+    /^dob$/i,
+    /streetpurok|sitio\s*\/\s*purok/i,
   ];
 
   const detectedPiiColumns = rawHeaders.filter(header => {
@@ -722,6 +812,8 @@ export function processRawSurveillanceCSV(
     
     // Inspect laboratory test and result fields if present in incoming PIDSR row
     const labTest = String(
+      (mapping.labTestType ? row[mapping.labTestType] : undefined) ||
+      row['Type of Test Conducted'] ||
       row['Lab Test Done'] ||
       row['lab_test'] ||
       row['diagnostic_test'] ||
@@ -731,6 +823,8 @@ export function processRawSurveillanceCSV(
     ).trim().toLowerCase();
 
     const labResult = String(
+      (mapping.labResult ? row[mapping.labResult] : undefined) ||
+      row['Laboratory Result'] ||
       row['Lab Result'] ||
       row['lab_result'] ||
       row['test_result'] ||
@@ -773,7 +867,8 @@ export function processRawSurveillanceCSV(
       labTest.includes('ns1') ||
       labTest.includes('pcr') ||
       labTest.includes('rt-pcr') ||
-      labTest.includes('viral');
+      labTest.includes('viral') ||
+      labTest.includes('virus antigen');
 
     const isWithinDays1To5 = diffDaysToConsult !== null ? diffDaysToConsult <= 5 : true;
 
@@ -790,10 +885,7 @@ export function processRawSurveillanceCSV(
     } else if (
       rawClass.includes('prob') ||
       rawClass === 'p' ||
-      warningSignsField.includes('yes') ||
-      warningSignsField.includes('present') ||
-      (labTest.includes('igm') && hasPositiveLab) ||
-      (admitted === 'Y' && !hasNegativeLab)
+      (!rawClass && (warningSignsField.includes('yes') || warningSignsField.includes('present') || (labTest.includes('igm') && hasPositiveLab) || (admitted === 'Y' && !hasNegativeLab)))
     ) {
       caseClassification = 'Probable';
       probableCount++;
@@ -920,10 +1012,15 @@ export function processRawSurveillanceCSV(
       epiIdMap.set(rec.epiId, i);
     }
 
-    // 2. Fuzzy Matching: Same Sex + Age (within ±0 or ±1) + Municipality + Barangay + Date Onset (within 2 days)
+    // 2. Fuzzy Matching: Only flag rows lacking distinct explicit PIDSR EPIIDs
+    const recHasExplicitEpiId = !rec.validationFlags.includes('Imputed EPIID');
     for (let j = 0; j < i; j++) {
       const prev = cleanedList[j];
       if (prev.isDuplicate) continue;
+      const prevHasExplicitEpiId = !prev.validationFlags.includes('Imputed EPIID');
+      if (recHasExplicitEpiId && prevHasExplicitEpiId && rec.epiId !== prev.epiId) {
+        continue;
+      }
 
       if (
         rec.sex !== 'Unknown' &&

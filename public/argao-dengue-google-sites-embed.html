@@ -1,0 +1,2027 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dengue Surveillance Dashboard — Municipality of Argao, Cebu</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg-canvas: #0b0c0e;
+      --bg-card: #111318;
+      --bg-surface: #171a21;
+      --border-hairline: rgba(255, 255, 255, 0.08);
+      --border-strong: rgba(255, 255, 255, 0.12);
+      --text-primary: #ffffff;
+      --text-body: #e4e4e7;
+      --text-muted: #94a3b8;
+      --text-dim: #64748b;
+      --font-sans: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --font-display: 'Plus Jakarta Sans', 'DM Sans', system-ui, sans-serif;
+      --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      background-color: var(--bg-canvas);
+      color: var(--text-body);
+      font-family: var(--font-sans);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      line-height: 1.5;
+    }
+
+    .tabular { font-variant-numeric: tabular-nums; }
+    .mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+
+    .container {
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 24px 20px 28px;
+    }
+
+    /* Header */
+    .header {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 12px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border-hairline);
+      margin-bottom: 22px;
+    }
+    .header h1 {
+      margin: 0;
+      font-family: var(--font-display);
+      font-size: clamp(22px, 2.5vw, 30px);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--text-primary);
+      line-height: 1.2;
+    }
+    .header-sub {
+      margin: 5px 0 0;
+      font-size: 14px;
+      color: #cbd5e1;
+    }
+    .header-meta {
+      text-align: right;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+    .header-meta-title {
+      font-weight: 600;
+      color: #93c5fd;
+      font-size: 13px;
+      margin-bottom: 3px;
+    }
+
+    /* 6-Card KPI Grid (3x2 on desktop) */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+    @media (min-width: 640px) {
+      .kpi-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    @media (min-width: 1024px) {
+      .kpi-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    }
+
+    .kpi-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-hairline);
+      border-radius: 12px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .kpi-label {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-muted);
+    }
+    .kpi-value-row {
+      margin-top: 10px;
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .kpi-value {
+      font-family: var(--font-mono);
+      font-size: clamp(28px, 3vw, 36px);
+      font-weight: 700;
+      letter-spacing: -0.025em;
+      line-height: 1.1;
+      color: var(--text-primary);
+    }
+    .kpi-delta {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .kpi-sub {
+      margin-top: 8px;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    /* Case Definitions */
+    .defs-band {
+      border-top: 1px solid var(--border-hairline);
+      border-bottom: 1px solid var(--border-hairline);
+      padding: 16px 0;
+      margin-bottom: 22px;
+    }
+    .defs-heading {
+      margin: 0 0 12px;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      color: #e2e8f0;
+    }
+    .defs-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+    }
+    @media (min-width: 768px) {
+      .defs-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    @media (min-width: 1024px) {
+      .defs-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    }
+    .def-col {
+      padding: 8px 0;
+      border-top: 1px solid var(--border-hairline);
+    }
+    .def-col:first-child { border-top: none; }
+    @media (min-width: 1024px) {
+      .def-col {
+        border-top: none;
+        border-left: 1px solid var(--border-hairline);
+        padding: 0 18px;
+      }
+      .def-col:first-child { border-left: none; padding-left: 0; }
+      .def-col:last-child { padding-right: 0; }
+    }
+    .def-title {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+    }
+    .def-text {
+      margin: 0;
+      font-size: 12px;
+      color: var(--text-muted);
+      line-height: 1.55;
+    }
+
+    /* Bento 2x2 Grid */
+    .bento-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 20px;
+      align-items: stretch;
+    }
+    @media (min-width: 1200px) {
+      .bento-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+
+    .panel {
+      background: var(--bg-card);
+      border: 1px solid var(--border-hairline);
+      border-radius: 12px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-width: 0;
+    }
+    .panel-header {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 10px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--border-hairline);
+    }
+    .panel-title {
+      margin: 0;
+      font-size: 16px;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      color: var(--text-primary);
+    }
+    .panel-subtitle {
+      margin: 3px 0 0;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    /* Interactive Controls */
+    .btn-toggle {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-strong);
+      border-radius: 8px;
+      padding: 6px 12px;
+      color: #e2e8f0;
+      font-family: var(--font-sans);
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background 0.15s ease;
+    }
+    .btn-toggle:hover { background: #1e293b; }
+
+    .seg-group {
+      display: inline-flex;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-hairline);
+      border-radius: 8px;
+      padding: 2px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+    }
+    .seg-btn {
+      background: transparent;
+      border: none;
+      border-radius: 6px;
+      padding: 4px 10px;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background 0.15s ease, color 0.15s ease;
+    }
+    .seg-btn:hover { color: #e2e8f0; }
+    .seg-btn.active {
+      background: #2563eb;
+      color: #ffffff;
+      font-weight: 600;
+    }
+
+    /* Epi Curve SVG */
+    .epi-legend {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 12px;
+      color: #cbd5e1;
+    }
+    .epi-swatch {
+      width: 12px;
+      height: 12px;
+      background: #1e3a8a;
+      border: 1px solid rgba(59, 130, 246, 0.6);
+      display: inline-block;
+    }
+    .epi-hover-readout {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: #93c5fd;
+      min-height: 16px;
+      margin-top: 8px;
+    }
+    .svg-scroll {
+      margin-top: 6px;
+      width: 100%;
+      overflow-x: auto;
+      flex: 1;
+      display: flex;
+      align-items: center;
+    }
+    .svg-scroll svg {
+      width: 100%;
+      min-width: 620px;
+      height: auto;
+      display: block;
+    }
+    .epi-col:hover .epi-bar { fill: #2563eb; }
+
+    /* Barangay Heatmap Table */
+    .heat-legend {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+    .heat-legend-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .heat-box {
+      width: 10px;
+      height: 10px;
+      display: inline-block;
+    }
+    .table-scroll {
+      margin-top: 10px;
+      overflow-x: auto;
+      overflow-y: auto;
+      max-height: 365px;
+      flex: 1;
+    }
+    table.heatmap {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 12px;
+    }
+    table.heatmap thead th {
+      position: sticky;
+      top: 0;
+      z-index: 5;
+      background: var(--bg-card);
+      border-bottom: 1px solid var(--border-strong);
+      padding: 8px 6px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+    table.heatmap thead th.right { text-align: right; }
+    table.heatmap thead th.center { text-align: center; }
+    table.heatmap tbody tr {
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      height: 36px;
+      transition: background 0.12s ease;
+    }
+    table.heatmap tbody tr:hover { background: rgba(255, 255, 255, 0.03); }
+    table.heatmap td {
+      padding: 5px 6px;
+      font-family: var(--font-mono);
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+    .td-rank { color: var(--text-dim); font-size: 11px; width: 28px; }
+    .td-name { font-family: var(--font-sans) !important; font-weight: 500; color: #f1f5f9; }
+    .td-cases { text-align: right; font-weight: 700; color: #ffffff; }
+    .td-pop { text-align: right; color: #cbd5e1; }
+    .td-ar { text-align: right; color: #cbd5e1; }
+    .td-risk { font-family: var(--font-sans) !important; font-size: 11px; }
+    .risk-critical { color: #f87171; font-weight: 600; }
+    .risk-high { color: #fbbf24; font-weight: 600; }
+    .risk-moderate { color: #60a5fa; font-weight: 500; }
+    .risk-low { color: #cbd5e1; font-weight: 500; }
+    .risk-nocase { color: #64748b; font-weight: 500; }
+
+    .heat-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 2px;
+      width: 140px;
+      margin: 0 auto;
+    }
+    .heat-cell {
+      height: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      border-radius: 2px;
+    }
+    .heat-0 { background: #161922; color: #475569; }
+    .heat-1 { background: rgba(30, 58, 138, 0.8); color: #dbeafe; }
+    .heat-2 { background: rgba(217, 119, 6, 0.8); color: #fffbeb; }
+    .heat-3 { background: #dc2626; color: #ffffff; font-weight: 700; }
+
+    .pareto-wrap {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+    .pareto-track {
+      width: 48px;
+      height: 6px;
+      background: #1e293b;
+      border-radius: 999px;
+      overflow: hidden;
+    }
+    .pareto-fill { height: 100%; }
+    .pareto-vital { background: #3b82f6; }
+    .pareto-tail { background: #475569; }
+    .pareto-text-vital { color: #93c5fd; font-weight: 600; }
+    .pareto-text-tail { color: var(--text-muted); }
+
+    /* Case Pyramid */
+    .pyramid-legend {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 8px;
+      padding-top: 10px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: #cbd5e1;
+    }
+    .pyr-legend-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .pyr-axis {
+      display: flex;
+      align-items: center;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text-muted);
+      padding: 10px 0 4px;
+    }
+    .pyr-axis-left { flex: 1; text-align: right; padding-right: 8px; }
+    .pyr-axis-mid { width: 56px; text-align: center; font-weight: 600; color: #cbd5e1; }
+    .pyr-axis-right { flex: 1; text-align: left; padding-left: 8px; }
+
+    .pyr-rows {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    .pyr-row {
+      display: flex;
+      align-items: center;
+      height: 21px;
+      border-radius: 2px;
+      transition: background 0.1s ease;
+    }
+    .pyr-row:hover { background: rgba(255, 255, 255, 0.04); }
+    .pyr-side-left {
+      flex: 1;
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      height: 100%;
+    }
+    .pyr-side-right {
+      flex: 1;
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
+      height: 100%;
+    }
+    .pyr-age {
+      width: 56px;
+      text-align: center;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 600;
+      color: #e2e8f0;
+      flex-shrink: 0;
+    }
+    .pyr-bar-male {
+      height: 100%;
+      background: #2563eb;
+      border-bottom: 1px solid rgba(11, 12, 14, 0.7);
+      transition: width 0.2s ease;
+    }
+    .pyr-bar-female {
+      height: 100%;
+      background: #dc2626;
+      border-bottom: 1px solid rgba(11, 12, 14, 0.7);
+      transition: width 0.2s ease;
+    }
+    .pyr-val-m {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 600;
+      color: #93c5fd;
+      padding-right: 6px;
+    }
+    .pyr-val-f {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 600;
+      color: #fca5a5;
+      padding-left: 6px;
+    }
+    .pyr-hover-readout {
+      margin-top: 8px;
+      min-height: 16px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    /* Severity Risk Card */
+    .gauge-band {
+      padding: 16px 0;
+      border-bottom: 1px solid var(--border-hairline);
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+    }
+    .gauge-left {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .gauge-svg-wrap {
+      position: relative;
+      width: 96px;
+      height: 56px;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .gauge-pct {
+      position: absolute;
+      bottom: 0;
+      font-family: var(--font-mono);
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text-primary);
+      line-height: 1;
+    }
+    .spec-section {
+      padding-top: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .spec-section + .spec-section {
+      margin-top: 16px;
+      border-top: 1px solid var(--border-hairline);
+    }
+    .spec-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 8px;
+    }
+    .spec-head h4 {
+      margin: 0;
+      font-size: 12px;
+      font-weight: 600;
+      color: #e2e8f0;
+    }
+    .spec-head span {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+    .stacked-bar {
+      width: 100%;
+      height: 10px;
+      border-radius: 3px;
+      overflow: hidden;
+      display: flex;
+      background: var(--bg-surface);
+    }
+    .bar-row-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      font-size: 12px;
+      margin-bottom: 4px;
+    }
+    .bar-track {
+      width: 100%;
+      height: 6px;
+      border-radius: 3px;
+      overflow: hidden;
+      background: var(--bg-surface);
+    }
+
+    /* Footer */
+    .footer {
+      margin-top: 24px;
+      padding-top: 16px;
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 8px;
+      font-size: 12px;
+      color: var(--text-dim);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Executive Header -->
+    <header class="header">
+      <div>
+        <h1>Dengue Surveillance Dashboard</h1>
+        <p class="header-sub">Municipality of Argao, Cebu as of November 24, 2026</p>
+      </div>
+      <div class="header-meta">
+        <div class="header-meta-title">Public &amp; LGU Read-Only Report</div>
+        <div class="mono">Jan 4 – Nov 21, 2026 · MW 1–46</div>
+      </div>
+    </header>
+
+    <!-- 6 Equal Executive KPI Cards -->
+    <section class="kpi-grid" aria-label="Executive Epidemiological KPIs">
+      <div class="kpi-card">
+        <div class="kpi-label">Total Cases</div>
+        <div class="kpi-value-row">
+          <span class="kpi-value">313</span>
+          <span class="kpi-delta" style="color:#fbbf24">+552.1%</span>
+        </div>
+        <div class="kpi-sub">vs. 48 last year · AR 3.96/1,000</div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-label">Total Alive</div>
+        <div class="kpi-value-row">
+          <span class="kpi-value" style="color:#34d399">312</span>
+          <span class="kpi-delta" style="color:#6ee7b7">99.7%</span>
+        </div>
+        <div class="kpi-sub">99.7% of total cases</div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-label">Total Deaths</div>
+        <div class="kpi-value-row">
+          <span class="kpi-value" style="color:#f87171">1</span>
+          <span class="kpi-delta" style="color:#fca5a5">0.3%</span>
+        </div>
+        <div class="kpi-sub">0.3% share</div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-label">Case Fatality Rate</div>
+        <div class="kpi-value-row">
+          <span class="kpi-value" style="color:#34d399">0.32%</span>
+          <span style="font-size:12px;font-weight:500;color:#6ee7b7">Within Benchmark</span>
+        </div>
+        <div class="kpi-sub">vs. &lt;1% National Standard</div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-label">Health-Seeking Delay</div>
+        <div class="kpi-value-row">
+          <span class="kpi-value" style="color:#fbbf24">2.7d</span>
+          <span class="kpi-delta" style="color:#fcd34d">52.1% within &le;2d</span>
+        </div>
+        <div class="kpi-sub">Median 2.0d · 25.7% delayed &gt;3d · n=292</div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-label">Hospitalization Rate</div>
+        <div class="kpi-value-row">
+          <span class="kpi-value" style="color:#60a5fa">52.7%</span>
+          <span class="kpi-delta" style="color:#93c5fd">165 admitted</span>
+        </div>
+        <div class="kpi-sub">148 outpatient · Mean 3.0d to admit</div>
+      </div>
+    </section>
+
+    <!-- Dengue Standard Case Definitions -->
+    <section class="defs-band" aria-label="Dengue Standard Case Definitions">
+      <h2 class="defs-heading">Dengue Standard Case Definitions</h2>
+      <div class="defs-grid">
+        <div class="def-col">
+            <div class="def-title">Suspected Dengue</div>
+            <p class="def-text">Acute febrile illness (2–7 days) with at least two symptoms: headache, retro-orbital pain, myalgia, arthralgia, rash, hemorrhagic signs, or leukopenia.</p>
+          </div>
+<div class="def-col">
+            <div class="def-title">Without Warning</div>
+            <p class="def-text">Probable or confirmed dengue with acute fever and systemic manifestations without abdominal pain, persistent vomiting, bleeding, or plasma leakage.</p>
+          </div>
+<div class="def-col">
+            <div class="def-title">With Warning</div>
+            <p class="def-text">Abdominal tenderness, persistent vomiting, fluid accumulation, mucosal bleeding, lethargy, hepatomegaly &gt;2 cm, or rising hematocrit.</p>
+          </div>
+<div class="def-col">
+            <div class="def-title">Severe Dengue</div>
+            <p class="def-text">Severe plasma leakage leading to shock or respiratory distress, severe hemorrhage, or severe organ impairment.</p>
+          </div>
+      </div>
+    </section>
+
+    <!-- 2x2 BI Visualization Bento Grid -->
+    <main class="bento-grid">
+      <!-- 1. Epidemic Curve -->
+      <section class="panel" aria-label="Epidemic Curve">
+        <div class="panel-header">
+          <div>
+            <h3 class="panel-title">Epidemic Curve</h3>
+            <p class="panel-subtitle mono">Weekly cases by onset of symptoms · Jan 4 – Nov 21, 2026</p>
+          </div>
+          <div class="epi-legend">
+            <span class="epi-swatch"></span>
+            <span>Cases</span>
+          </div>
+        </div>
+        <div id="epi-readout" class="epi-hover-readout">Hover any week bar to inspect weekly onset counts (MW 1–46)</div>
+        <div class="svg-scroll">
+          <svg viewBox="0 0 920 290" role="img" aria-label="Weekly dengue epidemic curve from Morbidity Week 1 to 46">
+            <line x1="34" y1="22" x2="34" y2="242" stroke="#334155" stroke-width="1" />
+            <g>
+        <line x1="30" y1="242.0" x2="34" y2="242.0" stroke="#475569" stroke-width="1" />
+        <text x="27" y="245.0" fill="#94a3b8" font-size="10" font-family="'JetBrains Mono', ui-monospace, monospace" text-anchor="end">0</text>
+      </g>
+<g>
+        <line x1="30" y1="129.8" x2="34" y2="129.8" stroke="#475569" stroke-width="1" />
+        <text x="27" y="132.8" fill="#94a3b8" font-size="10" font-family="'JetBrains Mono', ui-monospace, monospace" text-anchor="end">25</text>
+      </g>
+<g>
+        <line x1="30" y1="22.0" x2="34" y2="22.0" stroke="#475569" stroke-width="1" />
+        <text x="27" y="25.0" fill="#94a3b8" font-size="10" font-family="'JetBrains Mono', ui-monospace, monospace" text-anchor="end">49</text>
+      </g>
+            <g class="epi-col" data-mw="1" data-cases="2">
+        <title>MW 1: 2 case(s)</title>
+        <rect class="epi-bar" data-mw="1" data-cases="2" x="34.00" y="233.02" width="18.91" height="8.98" fill="#1e3a8a" stroke="#0b0c0e" stroke-width="0.4" />
+             <text x="43.46" y="229.02" fill="#e2e8f0" font-size="8.5" font-family="'JetBrains Mono', ui-monospace, monospace" font-weight="600" text-anchor="middle">2</text>
+        <text x="43.46" y="256.0" fill="#94a3b8" font-size="8" font-family="'JetBrains Mono', ui-monospace, monospace" text-anchor="middle" font-weight="500">1</text>
+        <text x="43.46" y="272.0" fill="#cbd5e1" font-size="9" font-family="'DM Sans', system-ui, sans-serif" font-weight="600" text-anchor="start">Jan</text>
+      </g>
+<g class="epi-col" data-mw="2" data-cases="0">
+        <title>MW 2: 0 case(s)</title>
+        <rect class="epi-bar-hit" data-mw="2" data-cases="0" x="52.91" y="22" width="18.91" height="220" fill="transparent" />
+        <text x="62.37" y="256.0" fill="#94a3b8" font-size="8" font-family="'JetBrains Mono', ui-monospace, monospace" text-anchor="middle" font-weight="500">2</text>
+        
+      </g>
+<g class="epi-col" data-mw="3" data-cases="1">
+        <title>MW 3: 1 case(s)</title>
+        <rect class="epi-bar" data-mw="3" data-cases="1" x="71.83" y="237.51" width="18.91" height="4.49" fill="#1e3a8a" stroke="#0b0c0e" stroke-width="0.4" />
+             <text x="81.28" y="233.51" fill="#e2e8f0" font-size="8.5" font-family="'JetBrains Mono', ui-monospace, monospace" font-weight="600" text-anchor="middle">1</text>
+        <text x="81.28" y="256.0" fill="#94a3b8" font-size="8" font-family="'JetBrains Mono', ui-monospace, monospace" text-anchor="middle" font-weight="500">3</text>
+        
+      </g>
+<g class="epi-col" data-mw="4" data-cases="1">
+        <title>MW 4: 1 case(s)</title>
+        <rect class="epi-bar" data-mw="4" data-cases="1" x="90.74" y="237.51" width="18.91" height="4.49" fill="#1e3a8a" stroke="#0b0c0e" stroke-width="0.4" />
+             <text x="100.20" y="233.51" fill="#e2e8f0" font-size="8.5" font-family="'JetBrains Mono', ui-monospace, monospace" font-weight="600" text-anchor="middle">1</text>
+        <text x="100.20" y="256.0" fill="#94a3b8" font-size="8" font-family="'JetBrains Mono', ui-monospace, monospace" text-anchor="middle" font-weight="500">4</text>
+        
+      </g>
+<g class="epi-col" data-mw="5" data-cases="0">
+        <title>MW 5: 0 case(s)</title>
+        <rect class="epi-bar-hit" data-mw="5" data-cases="0" x="109.65" y="22" width="18.91" height="220" fill="transparent" />
+        <text x="119.11" y="256.0" fill="#94a3b8" font-size="8" font-family="'JetBrains Mono', ui-monospace, monospace" text-anchor="middle" font-weight="500">5</text>
+        <text x="119.11" y="272.0" fill="#cbd5e1" font-size="9" font-family="'DM Sans', system-ui, sans-serif" font-weight="600" text-anchor="start">Feb</text>
+      </g>
+<g class="epi-col" data-mw="6" data-cases="0">
+        <title>MW 6: 0 case(s)</title>
+        <rect class="epi-bar-hit" data-mw="6" data-cases="0" x="128.57" y="22" width="18.91" height="220" fill="transparent" />
+        <text x="138.02" y="256.0" fill="#94a3b8" font-size="8" font-family="'JetBrains Mono', ui-monospace, monospace" text-anchor="middle" font-weight="500">6</text>
+        
+      </g>
+<g class="epi-col" data-mw="7" data-cases="1">
+        <title>MW 7: 1 case(s)</title>
+        <rect class="epi-bar" data-mw="7" data-cases="1" x="147.48" y="237.51" width="18.91" height="4.49" fill="#1e3a8a" stroke="#0b0c0e" stroke-width="0.4" />
+             <text x="156.93" y="233.51" fill="#e2e8f0" font-size="8.5" font-family="'JetBrains Mono', ui-monospace, monospace" font-weight="600" text-anchor="middle">1</text>
+        <text x="156.93" y="256.0" fill="#94a3b8" font-size="8" font-family="'JetBrains Mono', ui-monospace, monospace" text-anchor="middle" font-weight="500">7</text>
+        
+      </g>
+<g class="epi-col" data-mw="8" data-cases="0">
+        <title>MW 8: 0 case(s)</title>
+        <rect class="epi-bar-hit" data-mw="8" data-cases="0" x="166.39" y="22" width="18.91" height="220" fill="transparent" />
+        <text x="175.85" y="256.0" fill="#94a3b8" font-size="8" font-family="'JetBrains Mono', ui-monospace, monospace" text-anchor="middle" font-weight="500">8</text>
+        
+      </g>
+<g class="epi-col" data-mw="9" data-cases="1">
+        <title>MW 9: 1 case(s)</title>
+        <rect class="epi-bar" data-mw="9" data-cases="1" x="185.30" y="237.51" width="18.91" height="4.49" fill="#1e3a8a" stroke="#0b0c0e" stroke-width="0.4" />
+             <text x="194.76" y="233.51" fill="#e2e8f0" font-size="8.5" font-family="'JetBrains Mono', ui-monospace, monospace" font-weight="600" text-anchor="middle">1</text>
+        <text x="194.76" y="256.0" fill="#94a3b8" font-size="8" font-family="'JetBrains Mono', ui-monospace, monospace" text-anchor="middle" font-weight="500">9</text>
+        <text x="194.76" y="272.0" fill="#cbd5e1" font-size="9" font-family="'DM Sans', system-ui, sans-serif" font-weight="600" text-anchor="start">Mar</text>
+      </g>
+<g class="epi-col" data-mw="10" data-cases="1">
+        <title>MW 10: 1 case(s)</title>
+        <rect class="epi-bar" data-mw="10" data-cases="1" x="204.22" y="237.51" width="18.91" height="4.49" fill="#1e3a8a" stroke="#0b0c0e" stroke-width="0.4" />
+             <text x="213.67" y="233.51" fill="#e2e8f0" font-size="8.5" font-family="'JetBrains Mono', ui-monospace, monospace" font-weight="600" text-anchor="middle">1</text>
+        <text x="213.67" y="256.0" fill="#94a3b8" font-size="8" font-family="'JetBrains Mono', ui-monospace, monospace" text-anchor="middle" font-weight="500">10</text>
+        
+      </g>
+<g class="epi-col" data-mw="11" data-cases="2">
+        <title>MW 11: 2 case(s)</title>
+        <rect class="epi-bar" data-mw="11" data-cases="2" x="223.13" y="233.02" width="18.91" height="8.98" fill="#1e3a8a" stroke="#0b0c0e" stroke-width="0.4" />
+             <text x="232.59" y="229.02" fill="#e2e8f0" font-size="8.5" font-family="'JetBrains Mono', ui-monospace, monospace" font-weight="600" text-anchor="middle">2</text>
+        <text x="232.59" y="256.0" fill="#94a3b8" font-size="8" font-family="'JetBrains Mono', ui-monospace, monospace" text-anchor="middle" font-weight="500">11</text>
+        
+      </g>
+<g class="epi-col" data-mw="12" data-cases="1">
+        <title>MW 12: 1 case(s)</title>
+        <rect class="epi-bar" data-mw="12" data-cases="1" x="242.04" y="237.51" width="18.91" height="4.49" fill="#1e3a8a" stroke="#0b0c0e" stroke-width="0.4" />
+             <text x="251.50" y="233.51" fill="#e2e8f0" font-size="8.5" font-family="'JetBrains Mono', ui-monospace, monospace" font-weight="600" text-anchor="middle">1</text>
+        <text x="251.50" y="256.0" fill="#94a3b8" font-size="8" font-family="'JetBrains Mono', ui-monospace, monospace" text-anchor="middle" font-weight="500">12</text>
+        
+      </g>
+<g class="epi-col" data-mw="13" data-cases="0">
+        <title>MW 13: 0 case(s)</title>
+        <rect class="epi-bar-hit" data-mw="13" data-cases="0" x="260.96" y="22" width="18.91" height="220" fill="transparent" />
+        <text x="270.41" y="256.0" fill="#94a3b8" font-size="8" font-family="'JetBrains Mono', ui-monospace, monospace" text-anchor="middle" font-weight="500">13</text>
+        
+      </g>
+<g class="epi-col" data-mw="14" data-cases="1">
+        <title>MW 14: 1 case(s)</title>
+        <rect class="epi-bar" data-mw="14" data-cases="1" x="279.87" y="237.51" width="18.91" height="4.49" fill="#1e3a8a" stroke="#0b0c0e" stroke-width="0.4" />
+             <text x="289.33" y="233.51" fill="#e2e8f0" font-size="8.5" font-family="'JetBrains Mono', ui-monospace, monospace" font-weight="600" text-anchor="middle">1</text>
+        <text x="289.33" y="256.0" fill="#94a3b8" font-size="8" font-family="'JetBrains Mono', ui-monospace, monospace" text-anchor="middle" font-weight="500">14</text>
+        <text x="289.33" y="272.0" fill="#cbd5e1" font-size="9" font-family="'DM Sans', system-ui, sans-serif" font-weight="600" text-anchor="start">Apr</text>
+      </g>
+<g class="epi-col" data-mw="15" data-cases="1">
+        <title>MW 15: 1 case(s)</title>
+        <rect class="epi-bar" data-mw="15" data-cases="1" x="298.78" y="237.51" width="18.91" height="4.49" fill="#1e3a8a" stroke="#0b0c0e" stroke-width="0.4" />
+             <text x="308.24" y="233.51" fill="#e2e8f0" font-size="8.5" font-family="'JetBrains Mono', ui-monospace, monospace" font-weight="600" text-anchor="middle">1</text>
+        <text x="308.24" y="256.0" fill="#94a3b8" font-size="8" font-family="'JetBrains Mono', ui-monospace, monospace" text-anchor="middle" font-weight="500">15</text>
+        
+      </g>
+<g class="epi-col" data-mw="16" data-cases="0">
+        <title>MW 16: 0 case(s)</title>
+        <rect class="epi-bar-hit" data-mw="16" data-cases="0" x="317.70" y="22" width="18.91" height="220" fill="transparent" />
+        <text x="327.15" y="256.0" fill="#94a3b8" font-size="8" font-family="'JetBrains Mono', ui-monospace, monospace" text-anchor="middle" font-weight="500">16</text>
+        
+      </g>
+<g class="epi-col" data-mw="17" data-cases="1">
+        <title>MW 17: 1 case(s)</title>
+        <rect class="epi-bar" data-mw="17" data-cases="1" x="336.61" y="237.51" width="18.91" height="4.49" fill="#1e3a8a" stroke="#0b0c0e" stroke-width="0.4" />
+             <text x="346.07" y="233.51" fill="#e2e8f0" font-size="8.5" font-family="'JetBrains Mono', ui-monospace, monospace" font-weight="600" text-anchor="middle">1</text>
+        <text x="346.07" y="256.0" fill="#94a3b8" font-size="8" font-family="'JetBrains Mono', ui-monospace, monospace" text-anchor="middle" font-weight="500">17</text>
+        
+      </g>
+<g class="epi-col" data-mw="18" data-cases="0">
+        <title>MW 18: 0 case(s)</title>
+        <rect class="epi-bar-hit" data-mw="18" data-cases="0" x="355.52" y="22" width="18.91" height="220" fill="transparent" />
+        <text x="364.98" y="256.0" fill="#94a3b8" font-size="8" font-family="'JetBrains Mono', ui-monospace, monospace" text-anchor="middle" font-weight="500">18</text>
+        <text x="364.98" y="272.0" fill="#cbd5e1" font-size="9" font-family="'DM Sans', system-ui, sans-serif" font-weight="600" text-anchor="start">May</text>
+      </g>
+<g class="epi-col" data-mw="19" data-cases="0">
+        <title>MW 19: 0 case(s)</title>
+        <rect class="epi-bar-hit" data-mw="19" data-cases="0" x="374.43" y="22" width="18.91" height="220" fill="transparent" />
+        <text x="383.89" y="256.0" fill="#94a3b8" font-size="8" font-family="'JetBrains Mono', ui-monospace, monospace" text-anchor="middle" font-weight="500">19</text>
+        
+      </g>
+<g class="epi-col" data-mw="20" data-cases="1">
+        <title>MW 20: 1 case(s)</title>
+        <rect class="epi-bar" data-mw="20" data-cases="1" x="393.35" y="237.51" width="18.91" height="4.49" fill="#1e3a8a" stroke="#0b0c0e" stroke-width="0.4" />
+             <text x="402.80" y="233.51" fill="#e2e8f0" font-size="8.5" font-family="'JetBrains Mono', ui-monospace, monospace" font-weight="600" text-anchor="middle">1</text>
+        <text x="402.80" y="256.0" fill="#94a3b8" font-size="8" font-family="'JetBrains Mono', ui-monospace, monospace" text-anchor="middle" font-weight="500">20</text>
+        
+      </g>
+<g class="epi-col" data-mw="21" data-cases="0">
+        <title>MW 21: 0 case(s)</title>
+        <rect class="epi-bar-hit" data-mw="21" data-cases="0" x="412.26" y="22" width="18.91" height="220" fill="transparent" />
+        <text x="421.72" y="256.0" fill="#94a3b8" font-size="8" font-family="'JetBrains Mono', ui-monospace, monospace" text-anchor="middle" font-weight="500">21</text>
+        
+      </g>
+<g class="epi-col" data-mw="22" data-cases="1">
+        <title>MW 22: 1 case(s)</title>
+        <rect class="epi-bar" data-mw="22" data-cases="1" x="431.17" y="237.51" width="18.91" height="4.49" fill="#1e3a8a" stroke="#0b0c0e" stroke-width="0.4" />
+             <text x="440.63" y="233.51" fill="#e2e8f0" font-size="8.5" font-family="'JetBrains Mono', ui-monospace, monospace" font-weight="600" text-anchor="middle">1</text>
+        <text x="440.63" y="256.0" fill="#94a3b8" font-size="8" font-family="'JetBrains Mono', ui-monospace, monospace" text-anchor="middle" font-weight="500">22</text>
+        <text x="440.63" y="272.0" fill="#cbd5e1" font-size="9" font-family="'DM Sans', system-ui, sans-serif" font-weight="600" text-anchor="start">Jun</text>
+      </g>
+<g class="epi-col" data-mw="23" data-cases="1">
+        <title>MW 23: 1 case(s)</title>
+        <rect class="epi-bar" data-mw="23" data-cases="1" x="450.09" y="237.51" width="18.91" height="4.49" fill="#1e3a8a" stroke="#0b0c0e" stroke-width="0.4" />
+             <text x="459.54" y="233.51" fill="#e2e8f0" font-size="8.5" font-family="'JetBrains Mono', ui-monospace, monospace" font-weight="600" text-anchor="middle">1</text>
+        <text x="459.54" y="256.0" fill="#94a3b8" font-size="8" font-family="'JetBrains Mono', ui-monospace, monospace" text-anchor="middle" font-weight="500">23</text>
+        
+      </g>
+<g class="epi-col" data-mw="24" data-cases="2">
+        <title>MW 24: 2 case(s)</title>
+        <rect class="epi-bar" data-mw="24" data-cases="2" x="469.00" y="233.02" width="18.91" height="8.98" fill="#1e3a8a" stroke="#0b0c0e" stroke-width="0.4" />
+             <text x="478.46" y="229.02" fill="#e2e8f0" font-size="8.5" font-family="'JetBrains Mono', ui-monospace, monospace" font-weight="600" text-anchor="middle">2</text>
+        <text x="478.46" y="256.0" fill="#94a3b8" font-size="8" font-family="'JetBrains Mono', ui-monospace, monospace" text-anchor="middle" font-weight="500">24</text>
+        
+      </g>
+<g class="epi-col" data-mw="25" data-cases="1">
+        <title>MW 25: 1 case(s)</title>
+        <rect class="epi-bar" data-mw="25" data-cases="1" x="487.91" y="237.51" width="18.91" height="4.49" fill="#1e3a8a" stroke="#0b0c0e" stroke-width="0.4" />
+             <text x="497.37" y="233.51" fill="#e2e8f0" font-size="8.5" font-family="'JetBrains Mono', ui-monospace, monospace" font-weight="600" text-anchor="middle">1</text>
+        <text x="497.37" y="256.0" fill="#94a3b8" font-size="8" font-family="'JetBrains Mono', ui-monospace, monospace" text-anchor="middle" font-weight="500">25</text>
+        
+      </g>
+<g class="epi-col" data-mw="26" data-cases="2">
+        <title>MW 26: 2 case(s)</title>
+        <rect class="epi-bar" data-mw="26" data-cases="2" x="506.83" y="233.02" width="18.91" height="8.98" fill="#1e3a8a" stroke="#0b0c0e" stroke-width="0.4" />
+             <text x="516.28" y="229.02" fill="#e2e8f0" font-size="8.5" font-family="'JetBrains Mono', ui-monospace, monospace" font-weight="600" text-anchor="middle">2</text>
+        <text x="516.28" y="256.0" fill="#94a3b8" font-size="8" font-family="'JetBrains Mono', ui-monospace, monospace" text-anchor="middle" font-weight="500">26</text>
+        
+      </g>
+<g class="epi-col" data-mw="27" data-cases="4">
+        <title>MW 27: 4 case(s)</title>
+        <rect class="epi-bar" data-mw="27" data-cases="4" x="525.74" y="224.04" width="18.91" height="17.96" fill="#1e3a8a" stroke="#0b0c0e" stroke-width="0.4" />
+             <text x="535.20" y="220.04" fill="#e2e8f0" font-size="8.5" font-family="'JetBrains Mono', ui-monospace, monospace" font-weight="600" text-anchor="middle">4</text>
+        <text x="535.20" y="256.0" fill="#94a3b8" font-size="8" font-family="'JetBrains Mono', ui-monospace, monospace" text-anchor="middle" font-weight="500">27</text>
+        <text x="535.20" y="272.0" fill="#cbd5e1" font-size="9" font-family="'DM Sans', system-ui, sans-serif" font-weight="600" text-anchor="start">Jul</text>
+      </g>
+<g class="epi-col" data-mw="28" data-cases="2">
+        <title>MW 28: 2 case(s)</title>
+        <rect class="epi-bar" data-mw="28" data-cases="2" x="544.65" y="233.02" width="18.91" height="8.98" fill="#1e3a8a" stroke="#0b0c0e" stroke-width="0.4" />
+             <text x="554.11" y="229.02" fill="#e2e8f0" font-size="8.5" font-family="'JetBrains Mono', ui-monospace, monospace" font-weight="600" text-anchor="middle">2</text>
+        <text x="554.11" y="256.0" fill="#94a3b8" font-size="8" font-family="'JetBrains Mono', ui-monospace, monospace" text-anchor="middle" font-weight="500">28</text>
+        
+      </g>
+<g class="epi-col" data-mw="29" data-cases="11">
+        <title>MW 29: 11 case(s)</title>
+        <rect class="epi-bar" data-mw="29" data-cases="11" x="563.57" y="192.61" width="18.91" height="49.39" fill="#1e3a8a" stroke="#0b0c0e" stroke-width="0.4" />
+             <text x="573.02" y="188.61" fill="#e2e8f0" font-size="8.5" font-family="'JetBrains Mono', ui-monospace, monospace" font-weight="600" text-anchor="middle">11</text>
+        <text x="573.02" y="256.0" fill="#94a3b8" font-size="8" font-family="'JetBrains Mono', ui-monospace, monospace" text-anchor="middle" font-weight="500">29</text>
+        
+      </g>
+<g class="epi-col" data-mw="30" data-cases="12">
+        <title>MW 30: 12 case(s)</title>
+        <rect class="epi-bar" data-mw="30" data-cases="12" x="582.48" y="188.12" width="18.91" height="53.88" fill="#1e3a8a" stroke="#0b0c0e" stroke-width="0.4" />
+             <text x="591.93" y="184.12" fill="#e2e8f0" font-size="8.5" font-family="'JetBrains Mono', ui-monospace, monospace" font-weight="600" text-anchor="middle">12</text>
+        <text x="591.93" y="256.0" fill="#94a3b8" font-size="8" font-family="'JetBrains Mono', ui-monospace, monospace" text-anchor="middle" font-weight="500">30</text>
+        
+      </g>
+<g class="epi-col" data-mw="31" data-cases="10">
+        <title>MW 31: 10 case(s)</title>
+        <rect class="epi-bar" data-mw="31" data-cases="10" x="601.39" y="197.10" width="18.91" height="44.90" fill="#1e3a8a" stroke="#0b0c0e" stroke-width="0.4" />
+             <text x="610.85" y="193.10" fill="#e2e8f0" font-size="8.5" font-family="'JetBrains Mono', ui-monospace, monospace" font-weight="600" text-anchor="middle">10</text>
+        <text x="610.85" y="256.0" fill="#94a3b8" font-size="8" font-family="'JetBrains Mono', ui-monospace, monospace" text-anchor="middle" font-weight="500">31</text>
+        <text x="610.85" y="272.0" fill="#cbd5e1" font-size="9" font-family="'DM Sans', system-ui, sans-serif" font-weight="600" text-anchor="start">Aug</text>
+      </g>
+<g class="epi-col" data-mw="32" data-cases="12">
+        <title>MW 32: 12 case(s)</title>
+        <rect class="epi-bar" data-mw="32" data-cases="12" x="620.30" y="188.12" width="18.91" height="53.88" fill="#1e3a8a" stroke="#0b0c0e" stroke-width="0.4" />
+             <text x="629.76" y="184.12" fill="#e2e8f0" font-size="8.5" font-family="'JetBrains Mono', ui-monospace, monospace" font-weight="600" text-anchor="middle">12</text>
+        <text x="629.76" y="256.0" fill="#94a3b8" font-size="8" font-family="'JetBrains Mono', ui-monospace, monospace" text-anchor="middle" font-weight="500">32</text>
+        
+      </g>
+<g class="epi-col" data-mw="33" data-cases="8">
+        <title>MW 33: 8 case(s)</title>
+        <rect class="epi-bar" data-mw="33" data-cases="8" x="639.22" y="206.08" width="18.91" height="35.92" fill="#1e3a8a" stroke="#0b0c0e" stroke-width="0.4" />
+             <text x="648.67" y="202.08" fill="#e2e8f0" font-size="8.5" font-family="'JetBrains Mono', ui-monospace, monospace" font-weight="600" text-anchor="middle">8</text>
+        <text x="648.67" y="256.0" fill="#94a3b8" font-size="8" font-family="'JetBrains Mono', ui-monospace, monospace" text-anchor="middle" font-weight="500">33</text>
+        
+      </g>
+<g class="epi-col" data-mw="34" data-cases="11">
+        <title>MW 34: 11 case(s)</title>
+        <rect class="epi-bar" data-mw="34" data-cases="11" x="658.13" y="192.61" width="18.91" height="49.39" fill="#1e3a8a" stroke="#0b0c0e" stroke-width="0.4" />
+             <text x="667.59" y="188.61" fill="#e2e8f0" font-size="8.5" font-family="'JetBrains Mono', ui-monospace, monospace" font-weight="600" text-anchor="middle">11</text>
+        <text x="667.59" y="256.0" fill="#94a3b8" font-size="8" font-family="'JetBrains Mono', ui-monospace, monospace" text-anchor="middle" font-weight="500">34</text>
+        
+      </g>
+<g class="epi-col" data-mw="35" data-cases="15">
+        <title>MW 35: 15 case(s)</title>
+        <rect class="epi-bar" data-mw="35" data-cases="15" x="677.04" y="174.65" width="18.91" height="67.35" fill="#1e3a8a" stroke="#0b0c0e" stroke-width="0.4" />
+             <text x="686.50" y="170.65" fill="#e2e8f0" font-size="8.5" font-family="'JetBrains Mono', ui-monospace, monospace" font-weight="600" text-anchor="middle">15</text>
+        <text x="686.50" y="256.0" fill="#94a3b8" font-size="8" font-family="'JetBrains Mono', ui-monospace, monospace" text-anchor="middle" font-weight="500">35</text>
+        <text x="686.50" y="272.0" fill="#cbd5e1" font-size="9" font-family="'DM Sans', system-ui, sans-serif" font-weight="600" text-anchor="start">Sep</text>
+      </g>
+<g class="epi-col" data-mw="36" data-cases="5">
+        <title>MW 36: 5 case(s)</title>
+        <rect class="epi-bar" data-mw="36" data-cases="5" x="695.96" y="219.55" width="18.91" height="22.45" fill="#1e3a8a" stroke="#0b0c0e" stroke-width="0.4" />
+             <text x="705.41" y="215.55" fill="#e2e8f0" font-size="8.5" font-family="'JetBrains Mono', ui-monospace, monospace" font-weight="600" text-anchor="middle">5</text>
+        <text x="705.41" y="256.0" fill="#94a3b8" font-size="8" font-family="'JetBrains Mono', ui-monospace, monospace" text-anchor="middle" font-weight="500">36</text>
+        
+      </g>
+<g class="epi-col" data-mw="37" data-cases="19">
+        <title>MW 37: 19 case(s)</title>
+        <rect class="epi-bar" data-mw="37" data-cases="19" x="714.87" y="156.69" width="18.91" height="85.31" fill="#1e3a8a" stroke="#0b0c0e" stroke-width="0.4" />
+             <text x="724.33" y="152.69" fill="#e2e8f0" font-size="8.5" font-family="'JetBrains Mono', ui-monospace, monospace" font-weight="600" text-anchor="middle">19</text>
+        <text x="724.33" y="256.0" fill="#94a3b8" font-size="8" font-family="'JetBrains Mono', ui-monospace, monospace" text-anchor="middle" font-weight="500">37</text>
+        
+      </g>
+<g class="epi-col" data-mw="38" data-cases="11">
+        <title>MW 38: 11 case(s)</title>
+        <rect class="epi-bar" data-mw="38" data-cases="11" x="733.78" y="192.61" width="18.91" height="49.39" fill="#1e3a8a" stroke="#0b0c0e" stroke-width="0.4" />
+             <text x="743.24" y="188.61" fill="#e2e8f0" font-size="8.5" font-family="'JetBrains Mono', ui-monospace, monospace" font-weight="600" text-anchor="middle">11</text>
+        <text x="743.24" y="256.0" fill="#94a3b8" font-size="8" font-family="'JetBrains Mono', ui-monospace, monospace" text-anchor="middle" font-weight="500">38</text>
+        
+      </g>
+<g class="epi-col" data-mw="39" data-cases="8">
+        <title>MW 39: 8 case(s)</title>
+        <rect class="epi-bar" data-mw="39" data-cases="8" x="752.70" y="206.08" width="18.91" height="35.92" fill="#1e3a8a" stroke="#0b0c0e" stroke-width="0.4" />
+             <text x="762.15" y="202.08" fill="#e2e8f0" font-size="8.5" font-family="'JetBrains Mono', ui-monospace, monospace" font-weight="600" text-anchor="middle">8</text>
+        <text x="762.15" y="256.0" fill="#94a3b8" font-size="8" font-family="'JetBrains Mono', ui-monospace, monospace" text-anchor="middle" font-weight="500">39</text>
+        
+      </g>
+<g class="epi-col" data-mw="40" data-cases="12">
+        <title>MW 40: 12 case(s)</title>
+        <rect class="epi-bar" data-mw="40" data-cases="12" x="771.61" y="188.12" width="18.91" height="53.88" fill="#1e3a8a" stroke="#0b0c0e" stroke-width="0.4" />
+             <text x="781.07" y="184.12" fill="#e2e8f0" font-size="8.5" font-family="'JetBrains Mono', ui-monospace, monospace" font-weight="600" text-anchor="middle">12</text>
+        <text x="781.07" y="256.0" fill="#94a3b8" font-size="8" font-family="'JetBrains Mono', ui-monospace, monospace" text-anchor="middle" font-weight="500">40</text>
+        <text x="781.07" y="272.0" fill="#cbd5e1" font-size="9" font-family="'DM Sans', system-ui, sans-serif" font-weight="600" text-anchor="start">Oct</text>
+      </g>
+<g class="epi-col" data-mw="41" data-cases="16">
+        <title>MW 41: 16 case(s)</title>
+        <rect class="epi-bar" data-mw="41" data-cases="16" x="790.52" y="170.16" width="18.91" height="71.84" fill="#1e3a8a" stroke="#0b0c0e" stroke-width="0.4" />
+             <text x="799.98" y="166.16" fill="#e2e8f0" font-size="8.5" font-family="'JetBrains Mono', ui-monospace, monospace" font-weight="600" text-anchor="middle">16</text>
+        <text x="799.98" y="256.0" fill="#94a3b8" font-size="8" font-family="'JetBrains Mono', ui-monospace, monospace" text-anchor="middle" font-weight="500">41</text>
+        
+      </g>
+<g class="epi-col" data-mw="42" data-cases="20">
+        <title>MW 42: 20 case(s)</title>
+        <rect class="epi-bar" data-mw="42" data-cases="20" x="809.43" y="152.20" width="18.91" height="89.80" fill="#1e3a8a" stroke="#0b0c0e" stroke-width="0.4" />
+             <text x="818.89" y="148.20" fill="#e2e8f0" font-size="8.5" font-family="'JetBrains Mono', ui-monospace, monospace" font-weight="600" text-anchor="middle">20</text>
+        <text x="818.89" y="256.0" fill="#94a3b8" font-size="8" font-family="'JetBrains Mono', ui-monospace, monospace" text-anchor="middle" font-weight="500">42</text>
+        
+      </g>
+<g class="epi-col" data-mw="43" data-cases="20">
+        <title>MW 43: 20 case(s)</title>
+        <rect class="epi-bar" data-mw="43" data-cases="20" x="828.35" y="152.20" width="18.91" height="89.80" fill="#1e3a8a" stroke="#0b0c0e" stroke-width="0.4" />
+             <text x="837.80" y="148.20" fill="#e2e8f0" font-size="8.5" font-family="'JetBrains Mono', ui-monospace, monospace" font-weight="600" text-anchor="middle">20</text>
+        <text x="837.80" y="256.0" fill="#94a3b8" font-size="8" font-family="'JetBrains Mono', ui-monospace, monospace" text-anchor="middle" font-weight="500">43</text>
+        
+      </g>
+<g class="epi-col" data-mw="44" data-cases="41">
+        <title>MW 44: 41 case(s)</title>
+        <rect class="epi-bar" data-mw="44" data-cases="41" x="847.26" y="57.92" width="18.91" height="184.08" fill="#1e3a8a" stroke="#0b0c0e" stroke-width="0.4" />
+             <text x="856.72" y="53.92" fill="#e2e8f0" font-size="8.5" font-family="'JetBrains Mono', ui-monospace, monospace" font-weight="600" text-anchor="middle">41</text>
+        <text x="856.72" y="256.0" fill="#94a3b8" font-size="8" font-family="'JetBrains Mono', ui-monospace, monospace" text-anchor="middle" font-weight="500">44</text>
+        <text x="856.72" y="272.0" fill="#cbd5e1" font-size="9" font-family="'DM Sans', system-ui, sans-serif" font-weight="600" text-anchor="start">Nov</text>
+      </g>
+<g class="epi-col" data-mw="45" data-cases="27">
+        <title>MW 45: 27 case(s)</title>
+        <rect class="epi-bar" data-mw="45" data-cases="27" x="866.17" y="120.78" width="18.91" height="121.22" fill="#1e3a8a" stroke="#0b0c0e" stroke-width="0.4" />
+             <text x="875.63" y="116.78" fill="#e2e8f0" font-size="8.5" font-family="'JetBrains Mono', ui-monospace, monospace" font-weight="600" text-anchor="middle">27</text>
+        <text x="875.63" y="256.0" fill="#94a3b8" font-size="8" font-family="'JetBrains Mono', ui-monospace, monospace" text-anchor="middle" font-weight="500">45</text>
+        
+      </g>
+<g class="epi-col" data-mw="46" data-cases="28">
+        <title>MW 46: 28 case(s)</title>
+        <rect class="epi-bar" data-mw="46" data-cases="28" x="885.09" y="116.29" width="18.91" height="125.71" fill="#1e3a8a" stroke="#0b0c0e" stroke-width="0.4" />
+             <text x="894.54" y="112.29" fill="#e2e8f0" font-size="8.5" font-family="'JetBrains Mono', ui-monospace, monospace" font-weight="600" text-anchor="middle">28</text>
+        <text x="894.54" y="256.0" fill="#94a3b8" font-size="8" font-family="'JetBrains Mono', ui-monospace, monospace" text-anchor="middle" font-weight="500">46</text>
+        
+      </g>
+            <line x1="34" y1="242" x2="904" y2="242" stroke="#475569" stroke-width="1.2" />
+            <text x="469.0" y="287" fill="#94a3b8" font-size="10" font-family="'DM Sans', system-ui, sans-serif" font-weight="700" text-anchor="middle">Morbidity Week (MW 1 – 46)</text>
+          </svg>
+        </div>
+      </section>
+
+      <!-- 2. Barangay Heatmap -->
+      <section class="panel" aria-label="Barangay Heatmap">
+        <div class="panel-header">
+          <div>
+            <h3 class="panel-title">Barangay Heatmap</h3>
+            <p class="panel-subtitle mono">Pop. 79,064 · Municipal AR 3.96/1,000</p>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px;">
+            <div class="heat-legend" aria-hidden="true">
+              <span class="heat-legend-item"><span class="heat-box heat-0" style="border:1px solid rgba(255,255,255,0.1)"></span>0</span>
+              <span class="heat-legend-item"><span class="heat-box heat-1"></span>1</span>
+              <span class="heat-legend-item"><span class="heat-box heat-2"></span>2</span>
+              <span class="heat-legend-item"><span class="heat-box heat-3"></span>3+</span>
+            </div>
+            <button type="button" id="brgy-toggle-btn" class="btn-toggle" aria-expanded="false">All 45</button>
+          </div>
+        </div>
+        <div class="table-scroll">
+          <table class="heatmap">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Barangay</th>
+                <th class="center">MW 40–46</th>
+                <th class="right">Total Cases</th>
+                <th class="right">Population 2026</th>
+                <th class="right">Attack Rate / 1,000</th>
+                <th>Level of Risk</th>
+                <th class="right">Pareto</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="brgy-row">
+        <td class="td-rank">1</td>
+        <td class="td-name">Balisong</td>
+        <td class="td-heat"><div class="heat-grid"><div class="heat-cell heat-0" title="Balisong · MW 40: 0"></div><div class="heat-cell heat-2" title="Balisong · MW 41: 2">2</div><div class="heat-cell heat-2" title="Balisong · MW 42: 2">2</div><div class="heat-cell heat-3" title="Balisong · MW 43: 5">5</div><div class="heat-cell heat-3" title="Balisong · MW 44: 3">3</div><div class="heat-cell heat-1" title="Balisong · MW 45: 1">1</div><div class="heat-cell heat-1" title="Balisong · MW 46: 1">1</div></div></td>
+        <td class="td-cases">51</td>
+        <td class="td-pop">2,345</td>
+        <td class="td-ar">21.75</td>
+        <td class="td-risk risk-critical" title="Balisong: Critical · AR 21.75/1,000 (Pareto 80% Vital Few)">Critical</td>
+        <td class="td-pareto">
+          <div class="pareto-wrap">
+            <div class="pareto-track"><div class="pareto-fill pareto-vital" style="width:16.3%"></div></div>
+            <span class="pareto-text-vital">16.3%</span>
+          </div>
+        </td>
+      </tr>
+<tr class="brgy-row">
+        <td class="td-rank">2</td>
+        <td class="td-name">Poblacion</td>
+        <td class="td-heat"><div class="heat-grid"><div class="heat-cell heat-0" title="Poblacion · MW 40: 0"></div><div class="heat-cell heat-2" title="Poblacion · MW 41: 2">2</div><div class="heat-cell heat-2" title="Poblacion · MW 42: 2">2</div><div class="heat-cell heat-1" title="Poblacion · MW 43: 1">1</div><div class="heat-cell heat-3" title="Poblacion · MW 44: 5">5</div><div class="heat-cell heat-3" title="Poblacion · MW 45: 3">3</div><div class="heat-cell heat-1" title="Poblacion · MW 46: 1">1</div></div></td>
+        <td class="td-cases">27</td>
+        <td class="td-pop">5,911</td>
+        <td class="td-ar">4.57</td>
+        <td class="td-risk risk-moderate" title="Poblacion: Moderate · AR 4.57/1,000 (Pareto 80% Vital Few)">Moderate</td>
+        <td class="td-pareto">
+          <div class="pareto-wrap">
+            <div class="pareto-track"><div class="pareto-fill pareto-vital" style="width:24.9%"></div></div>
+            <span class="pareto-text-vital">24.9%</span>
+          </div>
+        </td>
+      </tr>
+<tr class="brgy-row">
+        <td class="td-rank">3</td>
+        <td class="td-name">Talaga</td>
+        <td class="td-heat"><div class="heat-grid"><div class="heat-cell heat-1" title="Talaga · MW 40: 1">1</div><div class="heat-cell heat-1" title="Talaga · MW 41: 1">1</div><div class="heat-cell heat-1" title="Talaga · MW 42: 1">1</div><div class="heat-cell heat-0" title="Talaga · MW 43: 0"></div><div class="heat-cell heat-1" title="Talaga · MW 44: 1">1</div><div class="heat-cell heat-2" title="Talaga · MW 45: 2">2</div><div class="heat-cell heat-2" title="Talaga · MW 46: 2">2</div></div></td>
+        <td class="td-cases">21</td>
+        <td class="td-pop">3,975</td>
+        <td class="td-ar">5.28</td>
+        <td class="td-risk risk-high" title="Talaga: High · AR 5.28/1,000 (Pareto 80% Vital Few)">High</td>
+        <td class="td-pareto">
+          <div class="pareto-wrap">
+            <div class="pareto-track"><div class="pareto-fill pareto-vital" style="width:31.6%"></div></div>
+            <span class="pareto-text-vital">31.6%</span>
+          </div>
+        </td>
+      </tr>
+<tr class="brgy-row">
+        <td class="td-rank">4</td>
+        <td class="td-name">Talo-ot</td>
+        <td class="td-heat"><div class="heat-grid"><div class="heat-cell heat-2" title="Talo-ot · MW 40: 2">2</div><div class="heat-cell heat-2" title="Talo-ot · MW 41: 2">2</div><div class="heat-cell heat-3" title="Talo-ot · MW 42: 4">4</div><div class="heat-cell heat-1" title="Talo-ot · MW 43: 1">1</div><div class="heat-cell heat-3" title="Talo-ot · MW 44: 4">4</div><div class="heat-cell heat-1" title="Talo-ot · MW 45: 1">1</div><div class="heat-cell heat-1" title="Talo-ot · MW 46: 1">1</div></div></td>
+        <td class="td-cases">20</td>
+        <td class="td-pop">4,322</td>
+        <td class="td-ar">4.63</td>
+        <td class="td-risk risk-moderate" title="Talo-ot: Moderate · AR 4.63/1,000 (Pareto 80% Vital Few)">Moderate</td>
+        <td class="td-pareto">
+          <div class="pareto-wrap">
+            <div class="pareto-track"><div class="pareto-fill pareto-vital" style="width:38.0%"></div></div>
+            <span class="pareto-text-vital">38.0%</span>
+          </div>
+        </td>
+      </tr>
+<tr class="brgy-row">
+        <td class="td-rank">5</td>
+        <td class="td-name">Bulasa</td>
+        <td class="td-heat"><div class="heat-grid"><div class="heat-cell heat-2" title="Bulasa · MW 40: 2">2</div><div class="heat-cell heat-1" title="Bulasa · MW 41: 1">1</div><div class="heat-cell heat-0" title="Bulasa · MW 42: 0"></div><div class="heat-cell heat-0" title="Bulasa · MW 43: 0"></div><div class="heat-cell heat-2" title="Bulasa · MW 44: 2">2</div><div class="heat-cell heat-1" title="Bulasa · MW 45: 1">1</div><div class="heat-cell heat-2" title="Bulasa · MW 46: 2">2</div></div></td>
+        <td class="td-cases">18</td>
+        <td class="td-pop">3,971</td>
+        <td class="td-ar">4.53</td>
+        <td class="td-risk risk-moderate" title="Bulasa: Moderate · AR 4.53/1,000 (Pareto 80% Vital Few)">Moderate</td>
+        <td class="td-pareto">
+          <div class="pareto-wrap">
+            <div class="pareto-track"><div class="pareto-fill pareto-vital" style="width:43.8%"></div></div>
+            <span class="pareto-text-vital">43.8%</span>
+          </div>
+        </td>
+      </tr>
+<tr class="brgy-row">
+        <td class="td-rank">6</td>
+        <td class="td-name">Tulic</td>
+        <td class="td-heat"><div class="heat-grid"><div class="heat-cell heat-1" title="Tulic · MW 40: 1">1</div><div class="heat-cell heat-1" title="Tulic · MW 41: 1">1</div><div class="heat-cell heat-2" title="Tulic · MW 42: 2">2</div><div class="heat-cell heat-0" title="Tulic · MW 43: 0"></div><div class="heat-cell heat-3" title="Tulic · MW 44: 4">4</div><div class="heat-cell heat-0" title="Tulic · MW 45: 0"></div><div class="heat-cell heat-2" title="Tulic · MW 46: 2">2</div></div></td>
+        <td class="td-cases">16</td>
+        <td class="td-pop">3,134</td>
+        <td class="td-ar">5.11</td>
+        <td class="td-risk risk-high" title="Tulic: High · AR 5.11/1,000 (Pareto 80% Vital Few)">High</td>
+        <td class="td-pareto">
+          <div class="pareto-wrap">
+            <div class="pareto-track"><div class="pareto-fill pareto-vital" style="width:48.9%"></div></div>
+            <span class="pareto-text-vital">48.9%</span>
+          </div>
+        </td>
+      </tr>
+<tr class="brgy-row">
+        <td class="td-rank">7</td>
+        <td class="td-name">Langtad</td>
+        <td class="td-heat"><div class="heat-grid"><div class="heat-cell heat-0" title="Langtad · MW 40: 0"></div><div class="heat-cell heat-0" title="Langtad · MW 41: 0"></div><div class="heat-cell heat-0" title="Langtad · MW 42: 0"></div><div class="heat-cell heat-1" title="Langtad · MW 43: 1">1</div><div class="heat-cell heat-1" title="Langtad · MW 44: 1">1</div><div class="heat-cell heat-3" title="Langtad · MW 45: 3">3</div><div class="heat-cell heat-3" title="Langtad · MW 46: 3">3</div></div></td>
+        <td class="td-cases">13</td>
+        <td class="td-pop">3,549</td>
+        <td class="td-ar">3.66</td>
+        <td class="td-risk risk-moderate" title="Langtad: Moderate · AR 3.66/1,000 (Pareto 80% Vital Few)">Moderate</td>
+        <td class="td-pareto">
+          <div class="pareto-wrap">
+            <div class="pareto-track"><div class="pareto-fill pareto-vital" style="width:53.0%"></div></div>
+            <span class="pareto-text-vital">53.0%</span>
+          </div>
+        </td>
+      </tr>
+<tr class="brgy-row">
+        <td class="td-rank">8</td>
+        <td class="td-name">Gutlang</td>
+        <td class="td-heat"><div class="heat-grid"><div class="heat-cell heat-0" title="Gutlang · MW 40: 0"></div><div class="heat-cell heat-0" title="Gutlang · MW 41: 0"></div><div class="heat-cell heat-3" title="Gutlang · MW 42: 3">3</div><div class="heat-cell heat-0" title="Gutlang · MW 43: 0"></div><div class="heat-cell heat-0" title="Gutlang · MW 44: 0"></div><div class="heat-cell heat-0" title="Gutlang · MW 45: 0"></div><div class="heat-cell heat-2" title="Gutlang · MW 46: 2">2</div></div></td>
+        <td class="td-cases">11</td>
+        <td class="td-pop">802</td>
+        <td class="td-ar">13.72</td>
+        <td class="td-risk risk-critical" title="Gutlang: Critical · AR 13.72/1,000 (Pareto 80% Vital Few)">Critical</td>
+        <td class="td-pareto">
+          <div class="pareto-wrap">
+            <div class="pareto-track"><div class="pareto-fill pareto-vital" style="width:56.5%"></div></div>
+            <span class="pareto-text-vital">56.5%</span>
+          </div>
+        </td>
+      </tr>
+<tr class="brgy-row">
+        <td class="td-rank">9</td>
+        <td class="td-name">Binlod</td>
+        <td class="td-heat"><div class="heat-grid"><div class="heat-cell heat-0" title="Binlod · MW 40: 0"></div><div class="heat-cell heat-2" title="Binlod · MW 41: 2">2</div><div class="heat-cell heat-0" title="Binlod · MW 42: 0"></div><div class="heat-cell heat-0" title="Binlod · MW 43: 0"></div><div class="heat-cell heat-3" title="Binlod · MW 44: 4">4</div><div class="heat-cell heat-0" title="Binlod · MW 45: 0"></div><div class="heat-cell heat-2" title="Binlod · MW 46: 2">2</div></div></td>
+        <td class="td-cases">10</td>
+        <td class="td-pop">4,297</td>
+        <td class="td-ar">2.33</td>
+        <td class="td-risk risk-moderate" title="Binlod: Moderate · AR 2.33/1,000 (Pareto 80% Vital Few)">Moderate</td>
+        <td class="td-pareto">
+          <div class="pareto-wrap">
+            <div class="pareto-track"><div class="pareto-fill pareto-vital" style="width:59.7%"></div></div>
+            <span class="pareto-text-vital">59.7%</span>
+          </div>
+        </td>
+      </tr>
+<tr class="brgy-row">
+        <td class="td-rank">10</td>
+        <td class="td-name">Bogo</td>
+        <td class="td-heat"><div class="heat-grid"><div class="heat-cell heat-1" title="Bogo · MW 40: 1">1</div><div class="heat-cell heat-0" title="Bogo · MW 41: 0"></div><div class="heat-cell heat-0" title="Bogo · MW 42: 0"></div><div class="heat-cell heat-2" title="Bogo · MW 43: 2">2</div><div class="heat-cell heat-0" title="Bogo · MW 44: 0"></div><div class="heat-cell heat-1" title="Bogo · MW 45: 1">1</div><div class="heat-cell heat-0" title="Bogo · MW 46: 0"></div></div></td>
+        <td class="td-cases">10</td>
+        <td class="td-pop">4,020</td>
+        <td class="td-ar">2.49</td>
+        <td class="td-risk risk-moderate" title="Bogo: Moderate · AR 2.49/1,000 (Pareto 80% Vital Few)">Moderate</td>
+        <td class="td-pareto">
+          <div class="pareto-wrap">
+            <div class="pareto-track"><div class="pareto-fill pareto-vital" style="width:62.9%"></div></div>
+            <span class="pareto-text-vital">62.9%</span>
+          </div>
+        </td>
+      </tr>
+<tr class="brgy-row">
+        <td class="td-rank">11</td>
+        <td class="td-name">Cansuje</td>
+        <td class="td-heat"><div class="heat-grid"><div class="heat-cell heat-0" title="Cansuje · MW 40: 0"></div><div class="heat-cell heat-0" title="Cansuje · MW 41: 0"></div><div class="heat-cell heat-1" title="Cansuje · MW 42: 1">1</div><div class="heat-cell heat-1" title="Cansuje · MW 43: 1">1</div><div class="heat-cell heat-1" title="Cansuje · MW 44: 1">1</div><div class="heat-cell heat-1" title="Cansuje · MW 45: 1">1</div><div class="heat-cell heat-0" title="Cansuje · MW 46: 0"></div></div></td>
+        <td class="td-cases">10</td>
+        <td class="td-pop">2,630</td>
+        <td class="td-ar">3.80</td>
+        <td class="td-risk risk-moderate" title="Cansuje: Moderate · AR 3.80/1,000 (Pareto 80% Vital Few)">Moderate</td>
+        <td class="td-pareto">
+          <div class="pareto-wrap">
+            <div class="pareto-track"><div class="pareto-fill pareto-vital" style="width:66.1%"></div></div>
+            <span class="pareto-text-vital">66.1%</span>
+          </div>
+        </td>
+      </tr>
+<tr class="brgy-row">
+        <td class="td-rank">12</td>
+        <td class="td-name">Jampang</td>
+        <td class="td-heat"><div class="heat-grid"><div class="heat-cell heat-0" title="Jampang · MW 40: 0"></div><div class="heat-cell heat-0" title="Jampang · MW 41: 0"></div><div class="heat-cell heat-1" title="Jampang · MW 42: 1">1</div><div class="heat-cell heat-0" title="Jampang · MW 43: 0"></div><div class="heat-cell heat-1" title="Jampang · MW 44: 1">1</div><div class="heat-cell heat-0" title="Jampang · MW 45: 0"></div><div class="heat-cell heat-2" title="Jampang · MW 46: 2">2</div></div></td>
+        <td class="td-cases">9</td>
+        <td class="td-pop">2,925</td>
+        <td class="td-ar">3.08</td>
+        <td class="td-risk risk-moderate" title="Jampang: Moderate · AR 3.08/1,000 (Pareto 80% Vital Few)">Moderate</td>
+        <td class="td-pareto">
+          <div class="pareto-wrap">
+            <div class="pareto-track"><div class="pareto-fill pareto-vital" style="width:69.0%"></div></div>
+            <span class="pareto-text-vital">69.0%</span>
+          </div>
+        </td>
+      </tr>
+<tr class="brgy-row" data-extra-brgy="1" style="display:none">
+        <td class="td-rank">13</td>
+        <td class="td-name">Lamacan</td>
+        <td class="td-heat"><div class="heat-grid"><div class="heat-cell heat-1" title="Lamacan · MW 40: 1">1</div><div class="heat-cell heat-0" title="Lamacan · MW 41: 0"></div><div class="heat-cell heat-0" title="Lamacan · MW 42: 0"></div><div class="heat-cell heat-2" title="Lamacan · MW 43: 2">2</div><div class="heat-cell heat-1" title="Lamacan · MW 44: 1">1</div><div class="heat-cell heat-1" title="Lamacan · MW 45: 1">1</div><div class="heat-cell heat-1" title="Lamacan · MW 46: 1">1</div></div></td>
+        <td class="td-cases">9</td>
+        <td class="td-pop">2,764</td>
+        <td class="td-ar">3.26</td>
+        <td class="td-risk risk-moderate" title="Lamacan: Moderate · AR 3.26/1,000 (Pareto 80% Vital Few)">Moderate</td>
+        <td class="td-pareto">
+          <div class="pareto-wrap">
+            <div class="pareto-track"><div class="pareto-fill pareto-vital" style="width:71.9%"></div></div>
+            <span class="pareto-text-vital">71.9%</span>
+          </div>
+        </td>
+      </tr>
+<tr class="brgy-row" data-extra-brgy="1" style="display:none">
+        <td class="td-rank">14</td>
+        <td class="td-name">Tiguib</td>
+        <td class="td-heat"><div class="heat-grid"><div class="heat-cell heat-0" title="Tiguib · MW 40: 0"></div><div class="heat-cell heat-0" title="Tiguib · MW 41: 0"></div><div class="heat-cell heat-0" title="Tiguib · MW 42: 0"></div><div class="heat-cell heat-0" title="Tiguib · MW 43: 0"></div><div class="heat-cell heat-0" title="Tiguib · MW 44: 0"></div><div class="heat-cell heat-0" title="Tiguib · MW 45: 0"></div><div class="heat-cell heat-1" title="Tiguib · MW 46: 1">1</div></div></td>
+        <td class="td-cases">7</td>
+        <td class="td-pop">997</td>
+        <td class="td-ar">7.02</td>
+        <td class="td-risk risk-high" title="Tiguib: High · AR 7.02/1,000 (Pareto 80% Vital Few)">High</td>
+        <td class="td-pareto">
+          <div class="pareto-wrap">
+            <div class="pareto-track"><div class="pareto-fill pareto-vital" style="width:74.1%"></div></div>
+            <span class="pareto-text-vital">74.1%</span>
+          </div>
+        </td>
+      </tr>
+<tr class="brgy-row" data-extra-brgy="1" style="display:none">
+        <td class="td-rank">15</td>
+        <td class="td-name">Colawin</td>
+        <td class="td-heat"><div class="heat-grid"><div class="heat-cell heat-0" title="Colawin · MW 40: 0"></div><div class="heat-cell heat-0" title="Colawin · MW 41: 0"></div><div class="heat-cell heat-0" title="Colawin · MW 42: 0"></div><div class="heat-cell heat-1" title="Colawin · MW 43: 1">1</div><div class="heat-cell heat-3" title="Colawin · MW 44: 3">3</div><div class="heat-cell heat-1" title="Colawin · MW 45: 1">1</div><div class="heat-cell heat-0" title="Colawin · MW 46: 0"></div></div></td>
+        <td class="td-cases">6</td>
+        <td class="td-pop">1,306</td>
+        <td class="td-ar">4.59</td>
+        <td class="td-risk risk-moderate" title="Colawin: Moderate · AR 4.59/1,000 (Pareto 80% Vital Few)">Moderate</td>
+        <td class="td-pareto">
+          <div class="pareto-wrap">
+            <div class="pareto-track"><div class="pareto-fill pareto-vital" style="width:76.0%"></div></div>
+            <span class="pareto-text-vital">76.0%</span>
+          </div>
+        </td>
+      </tr>
+<tr class="brgy-row" data-extra-brgy="1" style="display:none">
+        <td class="td-rank">16</td>
+        <td class="td-name">Tabayag</td>
+        <td class="td-heat"><div class="heat-grid"><div class="heat-cell heat-0" title="Tabayag · MW 40: 0"></div><div class="heat-cell heat-0" title="Tabayag · MW 41: 0"></div><div class="heat-cell heat-0" title="Tabayag · MW 42: 0"></div><div class="heat-cell heat-0" title="Tabayag · MW 43: 0"></div><div class="heat-cell heat-1" title="Tabayag · MW 44: 1">1</div><div class="heat-cell heat-1" title="Tabayag · MW 45: 1">1</div><div class="heat-cell heat-2" title="Tabayag · MW 46: 2">2</div></div></td>
+        <td class="td-cases">6</td>
+        <td class="td-pop">904</td>
+        <td class="td-ar">6.64</td>
+        <td class="td-risk risk-high" title="Tabayag: High · AR 6.64/1,000 (Pareto 80% Vital Few)">High</td>
+        <td class="td-pareto">
+          <div class="pareto-wrap">
+            <div class="pareto-track"><div class="pareto-fill pareto-vital" style="width:78.0%"></div></div>
+            <span class="pareto-text-vital">78.0%</span>
+          </div>
+        </td>
+      </tr>
+<tr class="brgy-row" data-extra-brgy="1" style="display:none">
+        <td class="td-rank">17</td>
+        <td class="td-name">Usmad</td>
+        <td class="td-heat"><div class="heat-grid"><div class="heat-cell heat-0" title="Usmad · MW 40: 0"></div><div class="heat-cell heat-0" title="Usmad · MW 41: 0"></div><div class="heat-cell heat-0" title="Usmad · MW 42: 0"></div><div class="heat-cell heat-2" title="Usmad · MW 43: 2">2</div><div class="heat-cell heat-3" title="Usmad · MW 44: 3">3</div><div class="heat-cell heat-0" title="Usmad · MW 45: 0"></div><div class="heat-cell heat-0" title="Usmad · MW 46: 0"></div></div></td>
+        <td class="td-cases">6</td>
+        <td class="td-pop">1,269</td>
+        <td class="td-ar">4.73</td>
+        <td class="td-risk risk-moderate" title="Usmad: Moderate · AR 4.73/1,000 (Pareto 80% Vital Few)">Moderate</td>
+        <td class="td-pareto">
+          <div class="pareto-wrap">
+            <div class="pareto-track"><div class="pareto-fill pareto-vital" style="width:79.9%"></div></div>
+            <span class="pareto-text-vital">79.9%</span>
+          </div>
+        </td>
+      </tr>
+<tr class="brgy-row" data-extra-brgy="1" style="display:none">
+        <td class="td-rank">18</td>
+        <td class="td-name">Balaas</td>
+        <td class="td-heat"><div class="heat-grid"><div class="heat-cell heat-0" title="Balaas · MW 40: 0"></div><div class="heat-cell heat-0" title="Balaas · MW 41: 0"></div><div class="heat-cell heat-0" title="Balaas · MW 42: 0"></div><div class="heat-cell heat-1" title="Balaas · MW 43: 1">1</div><div class="heat-cell heat-1" title="Balaas · MW 44: 1">1</div><div class="heat-cell heat-1" title="Balaas · MW 45: 1">1</div><div class="heat-cell heat-0" title="Balaas · MW 46: 0"></div></div></td>
+        <td class="td-cases">5</td>
+        <td class="td-pop">786</td>
+        <td class="td-ar">6.36</td>
+        <td class="td-risk risk-high" title="Balaas: High · AR 6.36/1,000 (Pareto 80% Vital Few)">High</td>
+        <td class="td-pareto">
+          <div class="pareto-wrap">
+            <div class="pareto-track"><div class="pareto-fill pareto-vital" style="width:81.5%"></div></div>
+            <span class="pareto-text-vital">81.5%</span>
+          </div>
+        </td>
+      </tr>
+<tr class="brgy-row" data-extra-brgy="1" style="display:none">
+        <td class="td-rank">19</td>
+        <td class="td-name">Canbanua</td>
+        <td class="td-heat"><div class="heat-grid"><div class="heat-cell heat-0" title="Canbanua · MW 40: 0"></div><div class="heat-cell heat-0" title="Canbanua · MW 41: 0"></div><div class="heat-cell heat-0" title="Canbanua · MW 42: 0"></div><div class="heat-cell heat-1" title="Canbanua · MW 43: 1">1</div><div class="heat-cell heat-0" title="Canbanua · MW 44: 0"></div><div class="heat-cell heat-2" title="Canbanua · MW 45: 2">2</div><div class="heat-cell heat-1" title="Canbanua · MW 46: 1">1</div></div></td>
+        <td class="td-cases">5</td>
+        <td class="td-pop">2,934</td>
+        <td class="td-ar">1.70</td>
+        <td class="td-risk risk-low" title="Canbanua: Low · AR 1.70/1,000 (Outside Pareto 80%)">Low</td>
+        <td class="td-pareto">
+          <div class="pareto-wrap">
+            <div class="pareto-track"><div class="pareto-fill pareto-tail" style="width:83.1%"></div></div>
+            <span class="pareto-text-tail">83.1%</span>
+          </div>
+        </td>
+      </tr>
+<tr class="brgy-row" data-extra-brgy="1" style="display:none">
+        <td class="td-rank">20</td>
+        <td class="td-name">Mabasa</td>
+        <td class="td-heat"><div class="heat-grid"><div class="heat-cell heat-0" title="Mabasa · MW 40: 0"></div><div class="heat-cell heat-3" title="Mabasa · MW 41: 3">3</div><div class="heat-cell heat-1" title="Mabasa · MW 42: 1">1</div><div class="heat-cell heat-0" title="Mabasa · MW 43: 0"></div><div class="heat-cell heat-0" title="Mabasa · MW 44: 0"></div><div class="heat-cell heat-1" title="Mabasa · MW 45: 1">1</div><div class="heat-cell heat-0" title="Mabasa · MW 46: 0"></div></div></td>
+        <td class="td-cases">5</td>
+        <td class="td-pop">1,523</td>
+        <td class="td-ar">3.28</td>
+        <td class="td-risk risk-low" title="Mabasa: Low · AR 3.28/1,000 (Outside Pareto 80%)">Low</td>
+        <td class="td-pareto">
+          <div class="pareto-wrap">
+            <div class="pareto-track"><div class="pareto-fill pareto-tail" style="width:84.7%"></div></div>
+            <span class="pareto-text-tail">84.7%</span>
+          </div>
+        </td>
+      </tr>
+<tr class="brgy-row" data-extra-brgy="1" style="display:none">
+        <td class="td-rank">21</td>
+        <td class="td-name">Talaytay</td>
+        <td class="td-heat"><div class="heat-grid"><div class="heat-cell heat-0" title="Talaytay · MW 40: 0"></div><div class="heat-cell heat-0" title="Talaytay · MW 41: 0"></div><div class="heat-cell heat-0" title="Talaytay · MW 42: 0"></div><div class="heat-cell heat-1" title="Talaytay · MW 43: 1">1</div><div class="heat-cell heat-0" title="Talaytay · MW 44: 0"></div><div class="heat-cell heat-1" title="Talaytay · MW 45: 1">1</div><div class="heat-cell heat-2" title="Talaytay · MW 46: 2">2</div></div></td>
+        <td class="td-cases">5</td>
+        <td class="td-pop">2,089</td>
+        <td class="td-ar">2.39</td>
+        <td class="td-risk risk-low" title="Talaytay: Low · AR 2.39/1,000 (Outside Pareto 80%)">Low</td>
+        <td class="td-pareto">
+          <div class="pareto-wrap">
+            <div class="pareto-track"><div class="pareto-fill pareto-tail" style="width:86.3%"></div></div>
+            <span class="pareto-text-tail">86.3%</span>
+          </div>
+        </td>
+      </tr>
+<tr class="brgy-row" data-extra-brgy="1" style="display:none">
+        <td class="td-rank">22</td>
+        <td class="td-name">Alambijud</td>
+        <td class="td-heat"><div class="heat-grid"><div class="heat-cell heat-0" title="Alambijud · MW 40: 0"></div><div class="heat-cell heat-0" title="Alambijud · MW 41: 0"></div><div class="heat-cell heat-0" title="Alambijud · MW 42: 0"></div><div class="heat-cell heat-0" title="Alambijud · MW 43: 0"></div><div class="heat-cell heat-1" title="Alambijud · MW 44: 1">1</div><div class="heat-cell heat-0" title="Alambijud · MW 45: 0"></div><div class="heat-cell heat-1" title="Alambijud · MW 46: 1">1</div></div></td>
+        <td class="td-cases">4</td>
+        <td class="td-pop">1,638</td>
+        <td class="td-ar">2.44</td>
+        <td class="td-risk risk-low" title="Alambijud: Low · AR 2.44/1,000 (Outside Pareto 80%)">Low</td>
+        <td class="td-pareto">
+          <div class="pareto-wrap">
+            <div class="pareto-track"><div class="pareto-fill pareto-tail" style="width:87.5%"></div></div>
+            <span class="pareto-text-tail">87.5%</span>
+          </div>
+        </td>
+      </tr>
+<tr class="brgy-row" data-extra-brgy="1" style="display:none">
+        <td class="td-rank">23</td>
+        <td class="td-name">Jomgao</td>
+        <td class="td-heat"><div class="heat-grid"><div class="heat-cell heat-2" title="Jomgao · MW 40: 2">2</div><div class="heat-cell heat-0" title="Jomgao · MW 41: 0"></div><div class="heat-cell heat-0" title="Jomgao · MW 42: 0"></div><div class="heat-cell heat-0" title="Jomgao · MW 43: 0"></div><div class="heat-cell heat-1" title="Jomgao · MW 44: 1">1</div><div class="heat-cell heat-0" title="Jomgao · MW 45: 0"></div><div class="heat-cell heat-0" title="Jomgao · MW 46: 0"></div></div></td>
+        <td class="td-cases">4</td>
+        <td class="td-pop">901</td>
+        <td class="td-ar">4.44</td>
+        <td class="td-risk risk-low" title="Jomgao: Low · AR 4.44/1,000 (Outside Pareto 80%)">Low</td>
+        <td class="td-pareto">
+          <div class="pareto-wrap">
+            <div class="pareto-track"><div class="pareto-fill pareto-tail" style="width:88.8%"></div></div>
+            <span class="pareto-text-tail">88.8%</span>
+          </div>
+        </td>
+      </tr>
+<tr class="brgy-row" data-extra-brgy="1" style="display:none">
+        <td class="td-rank">24</td>
+        <td class="td-name">Bug-ot</td>
+        <td class="td-heat"><div class="heat-grid"><div class="heat-cell heat-0" title="Bug-ot · MW 40: 0"></div><div class="heat-cell heat-0" title="Bug-ot · MW 41: 0"></div><div class="heat-cell heat-0" title="Bug-ot · MW 42: 0"></div><div class="heat-cell heat-0" title="Bug-ot · MW 43: 0"></div><div class="heat-cell heat-0" title="Bug-ot · MW 44: 0"></div><div class="heat-cell heat-0" title="Bug-ot · MW 45: 0"></div><div class="heat-cell heat-0" title="Bug-ot · MW 46: 0"></div></div></td>
+        <td class="td-cases">3</td>
+        <td class="td-pop">852</td>
+        <td class="td-ar">3.52</td>
+        <td class="td-risk risk-low" title="Bug-ot: Low · AR 3.52/1,000 (Outside Pareto 80%)">Low</td>
+        <td class="td-pareto">
+          <div class="pareto-wrap">
+            <div class="pareto-track"><div class="pareto-fill pareto-tail" style="width:89.8%"></div></div>
+            <span class="pareto-text-tail">89.8%</span>
+          </div>
+        </td>
+      </tr>
+<tr class="brgy-row" data-extra-brgy="1" style="display:none">
+        <td class="td-rank">25</td>
+        <td class="td-name">Guiwanon</td>
+        <td class="td-heat"><div class="heat-grid"><div class="heat-cell heat-0" title="Guiwanon · MW 40: 0"></div><div class="heat-cell heat-0" title="Guiwanon · MW 41: 0"></div><div class="heat-cell heat-0" title="Guiwanon · MW 42: 0"></div><div class="heat-cell heat-0" title="Guiwanon · MW 43: 0"></div><div class="heat-cell heat-2" title="Guiwanon · MW 44: 2">2</div><div class="heat-cell heat-1" title="Guiwanon · MW 45: 1">1</div><div class="heat-cell heat-0" title="Guiwanon · MW 46: 0"></div></div></td>
+        <td class="td-cases">3</td>
+        <td class="td-pop">1,794</td>
+        <td class="td-ar">1.67</td>
+        <td class="td-risk risk-low" title="Guiwanon: Low · AR 1.67/1,000 (Outside Pareto 80%)">Low</td>
+        <td class="td-pareto">
+          <div class="pareto-wrap">
+            <div class="pareto-track"><div class="pareto-fill pareto-tail" style="width:90.7%"></div></div>
+            <span class="pareto-text-tail">90.7%</span>
+          </div>
+        </td>
+      </tr>
+<tr class="brgy-row" data-extra-brgy="1" style="display:none">
+        <td class="td-rank">26</td>
+        <td class="td-name">Lapay</td>
+        <td class="td-heat"><div class="heat-grid"><div class="heat-cell heat-0" title="Lapay · MW 40: 0"></div><div class="heat-cell heat-0" title="Lapay · MW 41: 0"></div><div class="heat-cell heat-0" title="Lapay · MW 42: 0"></div><div class="heat-cell heat-0" title="Lapay · MW 43: 0"></div><div class="heat-cell heat-0" title="Lapay · MW 44: 0"></div><div class="heat-cell heat-0" title="Lapay · MW 45: 0"></div><div class="heat-cell heat-1" title="Lapay · MW 46: 1">1</div></div></td>
+        <td class="td-cases">3</td>
+        <td class="td-pop">527</td>
+        <td class="td-ar">5.69</td>
+        <td class="td-risk risk-moderate" title="Lapay: Moderate · AR 5.69/1,000 (Outside Pareto 80%)">Moderate</td>
+        <td class="td-pareto">
+          <div class="pareto-wrap">
+            <div class="pareto-track"><div class="pareto-fill pareto-tail" style="width:91.7%"></div></div>
+            <span class="pareto-text-tail">91.7%</span>
+          </div>
+        </td>
+      </tr>
+<tr class="brgy-row" data-extra-brgy="1" style="display:none">
+        <td class="td-rank">27</td>
+        <td class="td-name">Linut-od</td>
+        <td class="td-heat"><div class="heat-grid"><div class="heat-cell heat-1" title="Linut-od · MW 40: 1">1</div><div class="heat-cell heat-0" title="Linut-od · MW 41: 0"></div><div class="heat-cell heat-0" title="Linut-od · MW 42: 0"></div><div class="heat-cell heat-0" title="Linut-od · MW 43: 0"></div><div class="heat-cell heat-0" title="Linut-od · MW 44: 0"></div><div class="heat-cell heat-0" title="Linut-od · MW 45: 0"></div><div class="heat-cell heat-0" title="Linut-od · MW 46: 0"></div></div></td>
+        <td class="td-cases">3</td>
+        <td class="td-pop">1,019</td>
+        <td class="td-ar">2.94</td>
+        <td class="td-risk risk-low" title="Linut-od: Low · AR 2.94/1,000 (Outside Pareto 80%)">Low</td>
+        <td class="td-pareto">
+          <div class="pareto-wrap">
+            <div class="pareto-track"><div class="pareto-fill pareto-tail" style="width:92.7%"></div></div>
+            <span class="pareto-text-tail">92.7%</span>
+          </div>
+        </td>
+      </tr>
+<tr class="brgy-row" data-extra-brgy="1" style="display:none">
+        <td class="td-rank">28</td>
+        <td class="td-name">Tulang</td>
+        <td class="td-heat"><div class="heat-grid"><div class="heat-cell heat-0" title="Tulang · MW 40: 0"></div><div class="heat-cell heat-1" title="Tulang · MW 41: 1">1</div><div class="heat-cell heat-0" title="Tulang · MW 42: 0"></div><div class="heat-cell heat-1" title="Tulang · MW 43: 1">1</div><div class="heat-cell heat-0" title="Tulang · MW 44: 0"></div><div class="heat-cell heat-1" title="Tulang · MW 45: 1">1</div><div class="heat-cell heat-0" title="Tulang · MW 46: 0"></div></div></td>
+        <td class="td-cases">3</td>
+        <td class="td-pop">636</td>
+        <td class="td-ar">4.72</td>
+        <td class="td-risk risk-low" title="Tulang: Low · AR 4.72/1,000 (Outside Pareto 80%)">Low</td>
+        <td class="td-pareto">
+          <div class="pareto-wrap">
+            <div class="pareto-track"><div class="pareto-fill pareto-tail" style="width:93.6%"></div></div>
+            <span class="pareto-text-tail">93.6%</span>
+          </div>
+        </td>
+      </tr>
+<tr class="brgy-row" data-extra-brgy="1" style="display:none">
+        <td class="td-rank">29</td>
+        <td class="td-name">Apo</td>
+        <td class="td-heat"><div class="heat-grid"><div class="heat-cell heat-1" title="Apo · MW 40: 1">1</div><div class="heat-cell heat-0" title="Apo · MW 41: 0"></div><div class="heat-cell heat-0" title="Apo · MW 42: 0"></div><div class="heat-cell heat-0" title="Apo · MW 43: 0"></div><div class="heat-cell heat-0" title="Apo · MW 44: 0"></div><div class="heat-cell heat-0" title="Apo · MW 45: 0"></div><div class="heat-cell heat-0" title="Apo · MW 46: 0"></div></div></td>
+        <td class="td-cases">2</td>
+        <td class="td-pop">599</td>
+        <td class="td-ar">3.34</td>
+        <td class="td-risk risk-low" title="Apo: Low · AR 3.34/1,000 (Outside Pareto 80%)">Low</td>
+        <td class="td-pareto">
+          <div class="pareto-wrap">
+            <div class="pareto-track"><div class="pareto-fill pareto-tail" style="width:94.2%"></div></div>
+            <span class="pareto-text-tail">94.2%</span>
+          </div>
+        </td>
+      </tr>
+<tr class="brgy-row" data-extra-brgy="1" style="display:none">
+        <td class="td-rank">30</td>
+        <td class="td-name">Calagasan</td>
+        <td class="td-heat"><div class="heat-grid"><div class="heat-cell heat-0" title="Calagasan · MW 40: 0"></div><div class="heat-cell heat-0" title="Calagasan · MW 41: 0"></div><div class="heat-cell heat-0" title="Calagasan · MW 42: 0"></div><div class="heat-cell heat-0" title="Calagasan · MW 43: 0"></div><div class="heat-cell heat-0" title="Calagasan · MW 44: 0"></div><div class="heat-cell heat-1" title="Calagasan · MW 45: 1">1</div><div class="heat-cell heat-0" title="Calagasan · MW 46: 0"></div></div></td>
+        <td class="td-cases">2</td>
+        <td class="td-pop">1,066</td>
+        <td class="td-ar">1.88</td>
+        <td class="td-risk risk-low" title="Calagasan: Low · AR 1.88/1,000 (Outside Pareto 80%)">Low</td>
+        <td class="td-pareto">
+          <div class="pareto-wrap">
+            <div class="pareto-track"><div class="pareto-fill pareto-tail" style="width:94.9%"></div></div>
+            <span class="pareto-text-tail">94.9%</span>
+          </div>
+        </td>
+      </tr>
+<tr class="brgy-row" data-extra-brgy="1" style="display:none">
+        <td class="td-rank">31</td>
+        <td class="td-name">Canbantug</td>
+        <td class="td-heat"><div class="heat-grid"><div class="heat-cell heat-0" title="Canbantug · MW 40: 0"></div><div class="heat-cell heat-0" title="Canbantug · MW 41: 0"></div><div class="heat-cell heat-0" title="Canbantug · MW 42: 0"></div><div class="heat-cell heat-0" title="Canbantug · MW 43: 0"></div><div class="heat-cell heat-0" title="Canbantug · MW 44: 0"></div><div class="heat-cell heat-0" title="Canbantug · MW 45: 0"></div><div class="heat-cell heat-0" title="Canbantug · MW 46: 0"></div></div></td>
+        <td class="td-cases">2</td>
+        <td class="td-pop">918</td>
+        <td class="td-ar">2.18</td>
+        <td class="td-risk risk-low" title="Canbantug: Low · AR 2.18/1,000 (Outside Pareto 80%)">Low</td>
+        <td class="td-pareto">
+          <div class="pareto-wrap">
+            <div class="pareto-track"><div class="pareto-fill pareto-tail" style="width:95.5%"></div></div>
+            <span class="pareto-text-tail">95.5%</span>
+          </div>
+        </td>
+      </tr>
+<tr class="brgy-row" data-extra-brgy="1" style="display:none">
+        <td class="td-rank">32</td>
+        <td class="td-name">Capio-an</td>
+        <td class="td-heat"><div class="heat-grid"><div class="heat-cell heat-0" title="Capio-an · MW 40: 0"></div><div class="heat-cell heat-0" title="Capio-an · MW 41: 0"></div><div class="heat-cell heat-0" title="Capio-an · MW 42: 0"></div><div class="heat-cell heat-0" title="Capio-an · MW 43: 0"></div><div class="heat-cell heat-1" title="Capio-an · MW 44: 1">1</div><div class="heat-cell heat-0" title="Capio-an · MW 45: 0"></div><div class="heat-cell heat-1" title="Capio-an · MW 46: 1">1</div></div></td>
+        <td class="td-cases">2</td>
+        <td class="td-pop">1,045</td>
+        <td class="td-ar">1.91</td>
+        <td class="td-risk risk-low" title="Capio-an: Low · AR 1.91/1,000 (Outside Pareto 80%)">Low</td>
+        <td class="td-pareto">
+          <div class="pareto-wrap">
+            <div class="pareto-track"><div class="pareto-fill pareto-tail" style="width:96.2%"></div></div>
+            <span class="pareto-text-tail">96.2%</span>
+          </div>
+        </td>
+      </tr>
+<tr class="brgy-row" data-extra-brgy="1" style="display:none">
+        <td class="td-rank">33</td>
+        <td class="td-name">Casay</td>
+        <td class="td-heat"><div class="heat-grid"><div class="heat-cell heat-0" title="Casay · MW 40: 0"></div><div class="heat-cell heat-0" title="Casay · MW 41: 0"></div><div class="heat-cell heat-0" title="Casay · MW 42: 0"></div><div class="heat-cell heat-0" title="Casay · MW 43: 0"></div><div class="heat-cell heat-1" title="Casay · MW 44: 1">1</div><div class="heat-cell heat-0" title="Casay · MW 45: 0"></div><div class="heat-cell heat-0" title="Casay · MW 46: 0"></div></div></td>
+        <td class="td-cases">2</td>
+        <td class="td-pop">1,158</td>
+        <td class="td-ar">1.73</td>
+        <td class="td-risk risk-low" title="Casay: Low · AR 1.73/1,000 (Outside Pareto 80%)">Low</td>
+        <td class="td-pareto">
+          <div class="pareto-wrap">
+            <div class="pareto-track"><div class="pareto-fill pareto-tail" style="width:96.8%"></div></div>
+            <span class="pareto-text-tail">96.8%</span>
+          </div>
+        </td>
+      </tr>
+<tr class="brgy-row" data-extra-brgy="1" style="display:none">
+        <td class="td-rank">34</td>
+        <td class="td-name">Conalum</td>
+        <td class="td-heat"><div class="heat-grid"><div class="heat-cell heat-0" title="Conalum · MW 40: 0"></div><div class="heat-cell heat-0" title="Conalum · MW 41: 0"></div><div class="heat-cell heat-0" title="Conalum · MW 42: 0"></div><div class="heat-cell heat-0" title="Conalum · MW 43: 0"></div><div class="heat-cell heat-0" title="Conalum · MW 44: 0"></div><div class="heat-cell heat-1" title="Conalum · MW 45: 1">1</div><div class="heat-cell heat-0" title="Conalum · MW 46: 0"></div></div></td>
+        <td class="td-cases">2</td>
+        <td class="td-pop">552</td>
+        <td class="td-ar">3.62</td>
+        <td class="td-risk risk-low" title="Conalum: Low · AR 3.62/1,000 (Outside Pareto 80%)">Low</td>
+        <td class="td-pareto">
+          <div class="pareto-wrap">
+            <div class="pareto-track"><div class="pareto-fill pareto-tail" style="width:97.4%"></div></div>
+            <span class="pareto-text-tail">97.4%</span>
+          </div>
+        </td>
+      </tr>
+<tr class="brgy-row" data-extra-brgy="1" style="display:none">
+        <td class="td-rank">35</td>
+        <td class="td-name">Sua</td>
+        <td class="td-heat"><div class="heat-grid"><div class="heat-cell heat-0" title="Sua · MW 40: 0"></div><div class="heat-cell heat-0" title="Sua · MW 41: 0"></div><div class="heat-cell heat-2" title="Sua · MW 42: 2">2</div><div class="heat-cell heat-0" title="Sua · MW 43: 0"></div><div class="heat-cell heat-0" title="Sua · MW 44: 0"></div><div class="heat-cell heat-0" title="Sua · MW 45: 0"></div><div class="heat-cell heat-0" title="Sua · MW 46: 0"></div></div></td>
+        <td class="td-cases">2</td>
+        <td class="td-pop">756</td>
+        <td class="td-ar">2.65</td>
+        <td class="td-risk risk-low" title="Sua: Low · AR 2.65/1,000 (Outside Pareto 80%)">Low</td>
+        <td class="td-pareto">
+          <div class="pareto-wrap">
+            <div class="pareto-track"><div class="pareto-fill pareto-tail" style="width:98.1%"></div></div>
+            <span class="pareto-text-tail">98.1%</span>
+          </div>
+        </td>
+      </tr>
+<tr class="brgy-row" data-extra-brgy="1" style="display:none">
+        <td class="td-rank">36</td>
+        <td class="td-name">Sumaguan</td>
+        <td class="td-heat"><div class="heat-grid"><div class="heat-cell heat-0" title="Sumaguan · MW 40: 0"></div><div class="heat-cell heat-0" title="Sumaguan · MW 41: 0"></div><div class="heat-cell heat-1" title="Sumaguan · MW 42: 1">1</div><div class="heat-cell heat-0" title="Sumaguan · MW 43: 0"></div><div class="heat-cell heat-0" title="Sumaguan · MW 44: 0"></div><div class="heat-cell heat-1" title="Sumaguan · MW 45: 1">1</div><div class="heat-cell heat-0" title="Sumaguan · MW 46: 0"></div></div></td>
+        <td class="td-cases">2</td>
+        <td class="td-pop">1,069</td>
+        <td class="td-ar">1.87</td>
+        <td class="td-risk risk-low" title="Sumaguan: Low · AR 1.87/1,000 (Outside Pareto 80%)">Low</td>
+        <td class="td-pareto">
+          <div class="pareto-wrap">
+            <div class="pareto-track"><div class="pareto-fill pareto-tail" style="width:98.7%"></div></div>
+            <span class="pareto-text-tail">98.7%</span>
+          </div>
+        </td>
+      </tr>
+<tr class="brgy-row" data-extra-brgy="1" style="display:none">
+        <td class="td-rank">37</td>
+        <td class="td-name">Butong</td>
+        <td class="td-heat"><div class="heat-grid"><div class="heat-cell heat-0" title="Butong · MW 40: 0"></div><div class="heat-cell heat-0" title="Butong · MW 41: 0"></div><div class="heat-cell heat-0" title="Butong · MW 42: 0"></div><div class="heat-cell heat-0" title="Butong · MW 43: 0"></div><div class="heat-cell heat-0" title="Butong · MW 44: 0"></div><div class="heat-cell heat-0" title="Butong · MW 45: 0"></div><div class="heat-cell heat-0" title="Butong · MW 46: 0"></div></div></td>
+        <td class="td-cases">1</td>
+        <td class="td-pop">1,006</td>
+        <td class="td-ar">0.99</td>
+        <td class="td-risk risk-low" title="Butong: Low · AR 0.99/1,000 (Outside Pareto 80%)">Low</td>
+        <td class="td-pareto">
+          <div class="pareto-wrap">
+            <div class="pareto-track"><div class="pareto-fill pareto-tail" style="width:99.0%"></div></div>
+            <span class="pareto-text-tail">99.0%</span>
+          </div>
+        </td>
+      </tr>
+<tr class="brgy-row" data-extra-brgy="1" style="display:none">
+        <td class="td-rank">38</td>
+        <td class="td-name">Lengigon</td>
+        <td class="td-heat"><div class="heat-grid"><div class="heat-cell heat-0" title="Lengigon · MW 40: 0"></div><div class="heat-cell heat-1" title="Lengigon · MW 41: 1">1</div><div class="heat-cell heat-0" title="Lengigon · MW 42: 0"></div><div class="heat-cell heat-0" title="Lengigon · MW 43: 0"></div><div class="heat-cell heat-0" title="Lengigon · MW 44: 0"></div><div class="heat-cell heat-0" title="Lengigon · MW 45: 0"></div><div class="heat-cell heat-0" title="Lengigon · MW 46: 0"></div></div></td>
+        <td class="td-cases">1</td>
+        <td class="td-pop">1,342</td>
+        <td class="td-ar">0.75</td>
+        <td class="td-risk risk-low" title="Lengigon: Low · AR 0.75/1,000 (Outside Pareto 80%)">Low</td>
+        <td class="td-pareto">
+          <div class="pareto-wrap">
+            <div class="pareto-track"><div class="pareto-fill pareto-tail" style="width:99.4%"></div></div>
+            <span class="pareto-text-tail">99.4%</span>
+          </div>
+        </td>
+      </tr>
+<tr class="brgy-row" data-extra-brgy="1" style="display:none">
+        <td class="td-rank">39</td>
+        <td class="td-name">Panadtaran</td>
+        <td class="td-heat"><div class="heat-grid"><div class="heat-cell heat-0" title="Panadtaran · MW 40: 0"></div><div class="heat-cell heat-0" title="Panadtaran · MW 41: 0"></div><div class="heat-cell heat-0" title="Panadtaran · MW 42: 0"></div><div class="heat-cell heat-0" title="Panadtaran · MW 43: 0"></div><div class="heat-cell heat-0" title="Panadtaran · MW 44: 0"></div><div class="heat-cell heat-1" title="Panadtaran · MW 45: 1">1</div><div class="heat-cell heat-0" title="Panadtaran · MW 46: 0"></div></div></td>
+        <td class="td-cases">1</td>
+        <td class="td-pop">640</td>
+        <td class="td-ar">1.56</td>
+        <td class="td-risk risk-low" title="Panadtaran: Low · AR 1.56/1,000 (Outside Pareto 80%)">Low</td>
+        <td class="td-pareto">
+          <div class="pareto-wrap">
+            <div class="pareto-track"><div class="pareto-fill pareto-tail" style="width:99.7%"></div></div>
+            <span class="pareto-text-tail">99.7%</span>
+          </div>
+        </td>
+      </tr>
+<tr class="brgy-row" data-extra-brgy="1" style="display:none">
+        <td class="td-rank">40</td>
+        <td class="td-name">Ubaub</td>
+        <td class="td-heat"><div class="heat-grid"><div class="heat-cell heat-0" title="Ubaub · MW 40: 0"></div><div class="heat-cell heat-0" title="Ubaub · MW 41: 0"></div><div class="heat-cell heat-0" title="Ubaub · MW 42: 0"></div><div class="heat-cell heat-0" title="Ubaub · MW 43: 0"></div><div class="heat-cell heat-0" title="Ubaub · MW 44: 0"></div><div class="heat-cell heat-0" title="Ubaub · MW 45: 0"></div><div class="heat-cell heat-0" title="Ubaub · MW 46: 0"></div></div></td>
+        <td class="td-cases">1</td>
+        <td class="td-pop">1,195</td>
+        <td class="td-ar">0.84</td>
+        <td class="td-risk risk-low" title="Ubaub: Low · AR 0.84/1,000 (Outside Pareto 80%)">Low</td>
+        <td class="td-pareto">
+          <div class="pareto-wrap">
+            <div class="pareto-track"><div class="pareto-fill pareto-tail" style="width:100.0%"></div></div>
+            <span class="pareto-text-tail">100.0%</span>
+          </div>
+        </td>
+      </tr>
+<tr class="brgy-row" data-extra-brgy="1" style="display:none">
+        <td class="td-rank">41</td>
+        <td class="td-name">Anajao</td>
+        <td class="td-heat"><div class="heat-grid"><div class="heat-cell heat-0" title="Anajao · MW 40: 0"></div><div class="heat-cell heat-0" title="Anajao · MW 41: 0"></div><div class="heat-cell heat-0" title="Anajao · MW 42: 0"></div><div class="heat-cell heat-0" title="Anajao · MW 43: 0"></div><div class="heat-cell heat-0" title="Anajao · MW 44: 0"></div><div class="heat-cell heat-0" title="Anajao · MW 45: 0"></div><div class="heat-cell heat-0" title="Anajao · MW 46: 0"></div></div></td>
+        <td class="td-cases">0</td>
+        <td class="td-pop">846</td>
+        <td class="td-ar">0.00</td>
+        <td class="td-risk risk-nocase" title="Anajao: 0 cases reported">No Case</td>
+        <td class="td-pareto">
+          <div class="pareto-wrap">
+            <div class="pareto-track"><div class="pareto-fill pareto-tail" style="width:100.0%"></div></div>
+            <span class="pareto-text-tail">100.0%</span>
+          </div>
+        </td>
+      </tr>
+<tr class="brgy-row" data-extra-brgy="1" style="display:none">
+        <td class="td-rank">42</td>
+        <td class="td-name">Catang</td>
+        <td class="td-heat"><div class="heat-grid"><div class="heat-cell heat-0" title="Catang · MW 40: 0"></div><div class="heat-cell heat-0" title="Catang · MW 41: 0"></div><div class="heat-cell heat-0" title="Catang · MW 42: 0"></div><div class="heat-cell heat-0" title="Catang · MW 43: 0"></div><div class="heat-cell heat-0" title="Catang · MW 44: 0"></div><div class="heat-cell heat-0" title="Catang · MW 45: 0"></div><div class="heat-cell heat-0" title="Catang · MW 46: 0"></div></div></td>
+        <td class="td-cases">0</td>
+        <td class="td-pop">623</td>
+        <td class="td-ar">0.00</td>
+        <td class="td-risk risk-nocase" title="Catang: 0 cases reported">No Case</td>
+        <td class="td-pareto">
+          <div class="pareto-wrap">
+            <div class="pareto-track"><div class="pareto-fill pareto-tail" style="width:100.0%"></div></div>
+            <span class="pareto-text-tail">100.0%</span>
+          </div>
+        </td>
+      </tr>
+<tr class="brgy-row" data-extra-brgy="1" style="display:none">
+        <td class="td-rank">43</td>
+        <td class="td-name">Langub</td>
+        <td class="td-heat"><div class="heat-grid"><div class="heat-cell heat-0" title="Langub · MW 40: 0"></div><div class="heat-cell heat-0" title="Langub · MW 41: 0"></div><div class="heat-cell heat-0" title="Langub · MW 42: 0"></div><div class="heat-cell heat-0" title="Langub · MW 43: 0"></div><div class="heat-cell heat-0" title="Langub · MW 44: 0"></div><div class="heat-cell heat-0" title="Langub · MW 45: 0"></div><div class="heat-cell heat-0" title="Langub · MW 46: 0"></div></div></td>
+        <td class="td-cases">0</td>
+        <td class="td-pop">701</td>
+        <td class="td-ar">0.00</td>
+        <td class="td-risk risk-nocase" title="Langub: 0 cases reported">No Case</td>
+        <td class="td-pareto">
+          <div class="pareto-wrap">
+            <div class="pareto-track"><div class="pareto-fill pareto-tail" style="width:100.0%"></div></div>
+            <span class="pareto-text-tail">100.0%</span>
+          </div>
+        </td>
+      </tr>
+<tr class="brgy-row" data-extra-brgy="1" style="display:none">
+        <td class="td-rank">44</td>
+        <td class="td-name">Mandilikit</td>
+        <td class="td-heat"><div class="heat-grid"><div class="heat-cell heat-0" title="Mandilikit · MW 40: 0"></div><div class="heat-cell heat-0" title="Mandilikit · MW 41: 0"></div><div class="heat-cell heat-0" title="Mandilikit · MW 42: 0"></div><div class="heat-cell heat-0" title="Mandilikit · MW 43: 0"></div><div class="heat-cell heat-0" title="Mandilikit · MW 44: 0"></div><div class="heat-cell heat-0" title="Mandilikit · MW 45: 0"></div><div class="heat-cell heat-0" title="Mandilikit · MW 46: 0"></div></div></td>
+        <td class="td-cases">0</td>
+        <td class="td-pop">720</td>
+        <td class="td-ar">0.00</td>
+        <td class="td-risk risk-nocase" title="Mandilikit: 0 cases reported">No Case</td>
+        <td class="td-pareto">
+          <div class="pareto-wrap">
+            <div class="pareto-track"><div class="pareto-fill pareto-tail" style="width:100.0%"></div></div>
+            <span class="pareto-text-tail">100.0%</span>
+          </div>
+        </td>
+      </tr>
+<tr class="brgy-row" data-extra-brgy="1" style="display:none">
+        <td class="td-rank">45</td>
+        <td class="td-name">Mompeller</td>
+        <td class="td-heat"><div class="heat-grid"><div class="heat-cell heat-0" title="Mompeller · MW 40: 0"></div><div class="heat-cell heat-0" title="Mompeller · MW 41: 0"></div><div class="heat-cell heat-0" title="Mompeller · MW 42: 0"></div><div class="heat-cell heat-0" title="Mompeller · MW 43: 0"></div><div class="heat-cell heat-0" title="Mompeller · MW 44: 0"></div><div class="heat-cell heat-0" title="Mompeller · MW 45: 0"></div><div class="heat-cell heat-0" title="Mompeller · MW 46: 0"></div></div></td>
+        <td class="td-cases">0</td>
+        <td class="td-pop">1,008</td>
+        <td class="td-ar">0.00</td>
+        <td class="td-risk risk-nocase" title="Mompeller: 0 cases reported">No Case</td>
+        <td class="td-pareto">
+          <div class="pareto-wrap">
+            <div class="pareto-track"><div class="pareto-fill pareto-tail" style="width:100.0%"></div></div>
+            <span class="pareto-text-tail">100.0%</span>
+          </div>
+        </td>
+      </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- 3. Case Pyramid -->
+      <section class="panel" aria-label="Case Pyramid">
+        <div class="panel-header">
+          <div>
+            <h3 class="panel-title">Case Pyramid</h3>
+            <p id="pyr-subtitle" class="panel-subtitle mono">By 5-year age group &amp; sex · 2026 Pop. 79,064</p>
+          </div>
+          <div class="seg-group" role="tablist" aria-label="Case pyramid display metric">
+            <button type="button" class="seg-btn active" id="pyr-btn-cases" data-mode="cases">Cases</button>
+            <button type="button" class="seg-btn" id="pyr-btn-rate" data-mode="rate">Rate / 1,000</button>
+          </div>
+        </div>
+
+        <div class="pyramid-legend">
+          <span class="pyr-legend-item">
+            <span style="width:10px;height:10px;background:#2563eb;display:inline-block"></span>
+            <span>Male 163 (52%) · Pop 40,487 · AR 4.03</span>
+          </span>
+          <span class="pyr-legend-item">
+            <span style="width:10px;height:10px;background:#dc2626;display:inline-block"></span>
+            <span>Female 150 (48%) · Pop 38,577 · AR 3.89</span>
+          </span>
+        </div>
+
+        <div class="pyr-axis">
+          <div id="pyr-axis-left" class="pyr-axis-left">Male</div>
+          <div class="pyr-axis-mid">Age</div>
+          <div id="pyr-axis-right" class="pyr-axis-right">Female</div>
+        </div>
+
+        <div id="pyr-rows" class="pyr-rows"></div>
+        <div id="pyr-readout" class="pyr-hover-readout">Hover any age cohort to inspect 2026 population &amp; sex-specific attack rates</div>
+      </section>
+
+      <!-- 4. Clinical & Case Classification -->
+      <section class="panel" aria-label="Clinical and Case Classification">
+        <div class="panel-header">
+          <div>
+            <h3 class="panel-title">Clinical &amp; Case Classification</h3>
+            <p class="panel-subtitle">Severity spectrum, hospitalization &amp; PIDSR case classification</p>
+          </div>
+          <div style="text-align:right;" class="mono">
+            <div style="font-size:12px;color:var(--text-muted);">Classified</div>
+            <div style="font-size:14px;font-weight:700;color:#ffffff;">313</div>
+          </div>
+        </div>
+
+        <div class="gauge-band">
+          <div class="gauge-left">
+            <div class="gauge-svg-wrap">
+              <svg viewBox="0 0 110 62" style="width:100%;height:100%;overflow:visible;" role="img" aria-label="Hospitalization Rate 52.7%">
+                <path d="M 11 54 A 44 44 0 0 1 99 54" fill="none" stroke="#1e293b" stroke-width="10" stroke-linecap="round" />
+                <path d="M 11 54 A 44 44 0 0 1 99 54" fill="none" stroke="#2563eb" stroke-width="10" stroke-linecap="round" stroke-dasharray="138.23" stroke-dashoffset="65.38" />
+              </svg>
+              <span class="gauge-pct">52.7%</span>
+            </div>
+            <div>
+              <div style="font-size:12px;font-weight:600;color:#ffffff;">Hospitalization Rate (%)</div>
+              <div class="mono" style="font-size:12px;color:var(--text-muted);margin-top:4px;">165 admitted · 148 outpatient</div>
+            </div>
+          </div>
+          <div class="mono" style="font-size:12px;color:var(--text-muted);text-align:right;">
+            <div>Warning + Severe</div>
+            <div style="font-size:16px;font-weight:700;color:#fcd34d;margin-top:2px;">50.8%</div>
+          </div>
+        </div>
+
+        <div style="flex:1;display:flex;flex-direction:column;justify-content:center;">
+          <div class="spec-section">
+            <div class="spec-head">
+              <h4>Clinical Classification</h4>
+              <span>DOH Severity Spectrum</span>
+            </div>
+            <div class="stacked-bar">
+              <div style="width:49.2%;background:#2563eb;height:100%"></div><div style="width:50.2%;background:#eab308;height:100%"></div><div style="width:0.6%;background:#dc2626;height:100%"></div>
+            </div>
+            <div>
+                  <div class="bar-row-head">
+                    <span style="color:#e2e8f0;font-weight:500;">Without Warning Signs</span>
+                    <span class="mono"><strong style="color:#93c5fd;">154</strong> <span style="color:var(--text-muted);font-size:11px;">(49.2%)</span></span>
+                  </div>
+                  <div class="bar-track"><div style="width:49.2%;background:#2563eb;height:100%"></div></div>
+                </div><div>
+                  <div class="bar-row-head">
+                    <span style="color:#e2e8f0;font-weight:500;">With Warning Signs</span>
+                    <span class="mono"><strong style="color:#fde047;">157</strong> <span style="color:var(--text-muted);font-size:11px;">(50.2%)</span></span>
+                  </div>
+                  <div class="bar-track"><div style="width:50.2%;background:#eab308;height:100%"></div></div>
+                </div><div>
+                  <div class="bar-row-head">
+                    <span style="color:#e2e8f0;font-weight:500;">Severe Dengue</span>
+                    <span class="mono"><strong style="color:#fca5a5;">2</strong> <span style="color:var(--text-muted);font-size:11px;">(0.6%)</span></span>
+                  </div>
+                  <div class="bar-track"><div style="width:0.6%;background:#dc2626;height:100%"></div></div>
+                </div>
+          </div>
+
+          <div class="spec-section">
+            <div class="spec-head">
+              <h4>Case Classification</h4>
+              <span style="color:#6ee7b7;">83.1% lab confirmed</span>
+            </div>
+            <div class="stacked-bar">
+              <div style="width:83.1%;background:#10b981;height:100%"></div><div style="width:2.6%;background:#f59e0b;height:100%"></div><div style="width:14.4%;background:#64748b;height:100%"></div>
+            </div>
+            <div>
+                  <div class="bar-row-head">
+                    <span style="color:#e2e8f0;font-weight:500;">Confirmed</span>
+                    <span class="mono"><strong style="color:#6ee7b7;">260</strong> <span style="color:var(--text-muted);font-size:11px;">(83.1%)</span></span>
+                  </div>
+                  <div class="bar-track"><div style="width:83.1%;background:#10b981;height:100%"></div></div>
+                </div><div>
+                  <div class="bar-row-head">
+                    <span style="color:#e2e8f0;font-weight:500;">Probable</span>
+                    <span class="mono"><strong style="color:#fcd34d;">8</strong> <span style="color:var(--text-muted);font-size:11px;">(2.6%)</span></span>
+                  </div>
+                  <div class="bar-track"><div style="width:2.6%;background:#f59e0b;height:100%"></div></div>
+                </div><div>
+                  <div class="bar-row-head">
+                    <span style="color:#e2e8f0;font-weight:500;">Suspect</span>
+                    <span class="mono"><strong style="color:#cbd5e1;">45</strong> <span style="color:var(--text-muted);font-size:11px;">(14.4%)</span></span>
+                  </div>
+                  <div class="bar-track"><div style="width:14.4%;background:#64748b;height:100%"></div></div>
+                </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <span>Municipality of Argao · Municipal Epidemiology &amp; Surveillance Unit</span>
+      <span>Dengue Surveillance Report · Anonymized Public Aggregate (RA 10173 Compliant)</span>
+    </footer>
+  </div>
+
+  <script>
+    (function() {
+      var PYRAMID_DATA = [{"cohort":"≥70","label":"70+ Years","male":3,"female":4,"malePop":1313,"femalePop":1632,"totalPop":2945,"popPct":3.73,"maleRate":2.284843869002285,"femaleRate":2.450980392156863},{"cohort":"65-69","label":"65–69 Years","male":0,"female":2,"malePop":1402,"femalePop":1643,"totalPop":3045,"popPct":3.85,"maleRate":0,"femaleRate":1.2172854534388313},{"cohort":"60-64","label":"60–64 Years","male":5,"female":1,"malePop":1934,"femalePop":2228,"totalPop":4162,"popPct":5.26,"maleRate":2.5853154084798344,"femaleRate":0.4488330341113106},{"cohort":"55-59","label":"55–59 Years","male":1,"female":1,"malePop":1934,"femalePop":1713,"totalPop":3647,"popPct":4.61,"maleRate":0.5170630816959669,"femaleRate":0.5837711617046117},{"cohort":"50-54","label":"50–54 Years","male":2,"female":3,"malePop":2117,"femalePop":1959,"totalPop":4076,"popPct":5.16,"maleRate":0.944733112895607,"femaleRate":1.5313935681470139},{"cohort":"45-49","label":"45–49 Years","male":1,"female":0,"malePop":2395,"femalePop":2146,"totalPop":4541,"popPct":5.74,"maleRate":0.41753653444676414,"femaleRate":0},{"cohort":"40-44","label":"40–44 Years","male":2,"female":2,"malePop":2590,"femalePop":2276,"totalPop":4866,"popPct":6.15,"maleRate":0.7722007722007722,"femaleRate":0.8787346221441125},{"cohort":"35-39","label":"35–39 Years","male":1,"female":1,"malePop":2980,"femalePop":2782,"totalPop":5762,"popPct":7.29,"maleRate":0.3355704697986577,"femaleRate":0.3594536304816679},{"cohort":"30-34","label":"30–34 Years","male":5,"female":2,"malePop":3377,"femalePop":3102,"totalPop":6479,"popPct":8.19,"maleRate":1.4806040864672787,"femaleRate":0.6447453255963894},{"cohort":"25-29","label":"25–29 Years","male":8,"female":6,"malePop":3125,"femalePop":3137,"totalPop":6262,"popPct":7.92,"maleRate":2.56,"femaleRate":1.9126554032515142},{"cohort":"20-24","label":"20–24 Years","male":11,"female":10,"malePop":3382,"femalePop":3104,"totalPop":6486,"popPct":8.2,"maleRate":3.252513305736251,"femaleRate":3.221649484536082},{"cohort":"15-19","label":"15–19 Years","male":20,"female":15,"malePop":3779,"femalePop":3479,"totalPop":7258,"popPct":9.18,"maleRate":5.292405398253506,"femaleRate":4.311583788444955},{"cohort":"10-14","label":"10–14 Years","male":32,"female":27,"malePop":3934,"femalePop":3489,"totalPop":7423,"popPct":9.39,"maleRate":8.13421453990849,"femaleRate":7.738607050730868},{"cohort":"5-9","label":"5–9 Years","male":40,"female":43,"malePop":3532,"femalePop":3344,"totalPop":6876,"popPct":8.7,"maleRate":11.325028312570781,"femaleRate":12.858851674641148},{"cohort":"1-4","label":"1–4 Years","male":27,"female":25,"malePop":2264,"femalePop":2150,"totalPop":4414,"popPct":5.58,"maleRate":11.925795053003533,"femaleRate":11.627906976744185},{"cohort":"\u003c1","label":"\u003c1 Year","male":5,"female":8,"malePop":429,"femalePop":393,"totalPop":822,"popPct":1.04,"maleRate":11.655011655011656,"femaleRate":20.356234096692113}];
+      var TOTAL_POP = 79064;
+      var TOTAL_BRGY = 45;
+      var pyrMode = 'cases';
+
+      // 1. Barangay Top 12 / All 45 toggle
+      var brgyBtn = document.getElementById('brgy-toggle-btn');
+      var showAllBrgy = false;
+      if (brgyBtn) {
+        brgyBtn.addEventListener('click', function() {
+          showAllBrgy = !showAllBrgy;
+          var extraRows = document.querySelectorAll('tr[data-extra-brgy="1"]');
+          for (var i = 0; i < extraRows.length; i++) {
+            extraRows[i].style.display = showAllBrgy ? '' : 'none';
+          }
+          brgyBtn.textContent = showAllBrgy ? 'Top 12' : 'All ' + TOTAL_BRGY;
+          brgyBtn.setAttribute('aria-expanded', showAllBrgy ? 'true' : 'false');
+        });
+      }
+
+      // 2. Epidemic Curve Hover Telemetry
+      var epiReadout = document.getElementById('epi-readout');
+      var epiCols = document.querySelectorAll('.epi-col');
+      for (var c = 0; c < epiCols.length; c++) {
+        (function(col) {
+          col.addEventListener('mouseenter', function() {
+            if (!epiReadout) return;
+            var mw = col.getAttribute('data-mw');
+            var cases = col.getAttribute('data-cases');
+            epiReadout.textContent = 'Morbidity Week ' + mw + ': ' + cases + ' reported dengue case' + (cases === '1' ? '' : 's');
+          });
+        })(epiCols[c]);
+      }
+
+      // 3. Age-Sex Pyramid Render & Mode Toggle
+      var pyrContainer = document.getElementById('pyr-rows');
+      var pyrSubtitle = document.getElementById('pyr-subtitle');
+      var pyrAxisL = document.getElementById('pyr-axis-left');
+      var pyrAxisR = document.getElementById('pyr-axis-right');
+      var pyrReadout = document.getElementById('pyr-readout');
+      var btnCases = document.getElementById('pyr-btn-cases');
+      var btnRate = document.getElementById('pyr-btn-rate');
+
+      function renderPyramid() {
+        if (!pyrContainer) return;
+        var maxSide = pyrMode === 'rate' ? 0.1 : 1;
+        for (var i = 0; i < PYRAMID_DATA.length; i++) {
+          var row = PYRAMID_DATA[i];
+          var mVal = pyrMode === 'rate' ? row.maleRate : row.male;
+          var fVal = pyrMode === 'rate' ? row.femaleRate : row.female;
+          if (mVal > maxSide) maxSide = mVal;
+          if (fVal > maxSide) maxSide = fVal;
+        }
+
+        var html = '';
+        for (var j = 0; j < PYRAMID_DATA.length; j++) {
+          var r = PYRAMID_DATA[j];
+          var mMetric = pyrMode === 'rate' ? r.maleRate : r.male;
+          var fMetric = pyrMode === 'rate' ? r.femaleRate : r.female;
+          var mPct = (mMetric / maxSide) * 82;
+          var fPct = (fMetric / maxSide) * 82;
+          var mLabel = mMetric > 0 ? '<span class="pyr-val-m">' + (pyrMode === 'rate' ? r.maleRate.toFixed(1) : r.male) + '</span>' : '';
+          var fLabel = fMetric > 0 ? '<span class="pyr-val-f">' + (pyrMode === 'rate' ? r.femaleRate.toFixed(1) : r.female) + '</span>' : '';
+          var tip = r.label + ' (Pop ' + r.totalPop.toLocaleString() + ' / ' + r.popPct.toFixed(2) + '%): Male ' + r.male + ' of ' + r.malePop.toLocaleString() + ' (' + r.maleRate.toFixed(2) + '/1k) · Female ' + r.female + ' of ' + r.femalePop.toLocaleString() + ' (' + r.femaleRate.toFixed(2) + '/1k)';
+
+          html += '<div class="pyr-row" data-pyr-idx="' + j + '" title="' + tip.replace(/"/g, '&quot;') + '">' +
+            '<div class="pyr-side-left">' + mLabel + '<div class="pyr-bar-male" style="width:' + mPct.toFixed(2) + '%"></div></div>' +
+            '<div class="pyr-age">' + r.cohort + '</div>' +
+            '<div class="pyr-side-right"><div class="pyr-bar-female" style="width:' + fPct.toFixed(2) + '%"></div>' + fLabel + '</div>' +
+          '</div>';
+        }
+        pyrContainer.innerHTML = html;
+
+        if (pyrSubtitle) {
+          pyrSubtitle.textContent = pyrMode === 'cases'
+            ? 'By 5-year age group & sex · 2026 Pop. ' + TOTAL_POP.toLocaleString()
+            : 'Attack Rate / 1,000 Pop. · Base ' + TOTAL_POP.toLocaleString();
+        }
+        if (pyrAxisL) pyrAxisL.textContent = pyrMode === 'rate' ? 'Male AR / 1k' : 'Male';
+        if (pyrAxisR) pyrAxisR.textContent = pyrMode === 'rate' ? 'Female AR / 1k' : 'Female';
+
+        var rows = pyrContainer.querySelectorAll('.pyr-row');
+        for (var k = 0; k < rows.length; k++) {
+          (function(el) {
+            el.addEventListener('mouseenter', function() {
+              if (!pyrReadout) return;
+              var item = PYRAMID_DATA[Number(el.getAttribute('data-pyr-idx'))];
+              if (!item) return;
+              pyrReadout.textContent = item.label + ': Male ' + item.male + ' (' + item.maleRate.toFixed(2) + '/1k) · Female ' + item.female + ' (' + item.femaleRate.toFixed(2) + '/1k) · Pop ' + item.totalPop.toLocaleString();
+            });
+          })(rows[k]);
+        }
+      }
+
+      if (btnCases && btnRate) {
+        btnCases.addEventListener('click', function() {
+          pyrMode = 'cases';
+          btnCases.className = 'seg-btn active';
+          btnRate.className = 'seg-btn';
+          renderPyramid();
+        });
+        btnRate.addEventListener('click', function() {
+          pyrMode = 'rate';
+          btnRate.className = 'seg-btn active';
+          btnCases.className = 'seg-btn';
+          renderPyramid();
+        });
+      }
+
+      renderPyramid();
+    })();
+  </script>
+</body>
+</html>

@@ -31,6 +31,32 @@ export const DengueBIDashboard: React.FC<DengueBIDashboardProps> = ({
     });
   }, []);
 
+  const coverageRangeLabel = useMemo(() => {
+    const validDates = activeRecords
+      .map(r => r.dateOnset)
+      .filter(Boolean)
+      .sort();
+    if (validDates.length === 0) return 'Jan 1 – Nov 21, 2026';
+
+    const start = new Date(`${validDates[0]}T00:00:00`);
+    const end = new Date(`${validDates[validDates.length - 1]}T00:00:00`);
+    if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+      return 'Jan 1 – Nov 21, 2026';
+    }
+    const startStr = start.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+    });
+    const endStr = end.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+    });
+    return `${startStr} – ${endStr}`;
+  }, [activeRecords]);
+
+  const maxEpiWeek = Math.max(46, metrics.latestMorbidityWeek || 46);
+
   return (
     <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
       {/* Header: Title & Dynamic As-Of Date Subtitle */}
@@ -53,18 +79,18 @@ export const DengueBIDashboard: React.FC<DengueBIDashboardProps> = ({
             Data Collection
           </button>
           <div className="text-xs text-slate-400 font-mono tabular-nums">
-            Jan 1 – Nov 14, 2026
+            {coverageRangeLabel}
           </div>
         </div>
       </div>
 
-      {/* Top Section: 4 Equal KPI Columns + 4 Unboxed Case Definition Columns */}
+      {/* Top Section: 6 Equal KPI Columns + 4 Unboxed Case Definition Columns */}
       <TopTelemetryRow metrics={metrics} lastYearSamePeriodCases={48} />
 
       {/* Mid Visualization Bento Grid (2 x 2 Balanced Composition) */}
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-5 items-stretch">
         {/* Top-Left: Epidemic Curve (MW 1 – MW 46) */}
-        <CDCEpiCurve records={activeRecords} maxWeek={46} />
+        <CDCEpiCurve records={activeRecords} maxWeek={maxEpiWeek} />
 
         {/* Top-Right: Barangay Heatmap & Pareto Table */}
         <BarangayRiskTable records={activeRecords} />

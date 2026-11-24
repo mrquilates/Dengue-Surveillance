@@ -1,6 +1,10 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import { SurveillanceRecord } from '../types/surveillance';
-import { calculateBarangayHeatmapPareto } from '../utils/epidemiology';
+import {
+  BarangayRiskLevel,
+  calculateBarangayHeatmapPareto,
+  classifyBarangayRiskLevel,
+} from '../utils/epidemiology';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 
 interface BarangayRiskTableProps {
@@ -14,7 +18,13 @@ export const BarangayRiskTable: React.FC<BarangayRiskTableProps> = ({ records })
   const [population2026Map, setPopulation2026Map] = useState<Record<string, string>>(() => {
     try {
       const saved = localStorage.getItem(POP_2026_STORAGE_KEY);
-      return saved ? JSON.parse(saved) : {};
+      if (!saved) return {};
+      const parsed = JSON.parse(saved) as Record<string, string>;
+      const cleaned: Record<string, string> = {};
+      Object.entries(parsed).forEach(([k, v]) => {
+        if (typeof v === 'string' && v.trim() !== '') cleaned[k] = v;
+      });
+      return cleaned;
     } catch {
       return {};
     }
@@ -28,9 +38,17 @@ export const BarangayRiskTable: React.FC<BarangayRiskTableProps> = ({ records })
     }
   }, [population2026Map]);
 
-  const { rows, windowWeeks } = useMemo(() => {
+  const { rows, windowWeeks, totalYtdCases } = useMemo(() => {
     return calculateBarangayHeatmapPareto(records);
   }, [records]);
+
+  const totalPopulation2026 = useMemo(() => {
+    return rows.reduce((sum, row) => {
+      const override = population2026Map[row.name];
+      const pop = override !== undefined && override !== '' ? parseInt(override, 10) : row.population;
+      return sum + (isNaN(pop) ? 0 : pop);
+    }, 0);
+  }, [rows, population2026Map]);
 
   const displayedRows = useMemo(() => {
     return showAll45 ? rows : rows.slice(0, 12);
@@ -51,13 +69,16 @@ export const BarangayRiskTable: React.FC<BarangayRiskTableProps> = ({ records })
     return 'bg-red-600 text-white font-bold';
   };
 
-  const getHotspotTextClass = (tier: string) => {
-    if (tier === 'Persistent') return 'text-red-400';
-    if (tier === 'Emerging') return 'text-amber-400';
-    if (tier === 'Controlled') return 'text-blue-400';
-    if (tier === 'Sporadic') return 'text-slate-300';
-    return 'text-slate-500';
+  const getRiskLevelTextClass = (level: BarangayRiskLevel) => {
+    if (level === 'Critical') return 'text-red-400 font-semibold';
+    if (level === 'High') return 'text-amber-400 font-semibold';
+    if (level === 'Moderate') return 'text-blue-400 font-medium';
+    if (level === 'Low') return 'text-slate-300 font-medium';
+    return 'text-slate-500 font-medium';
   };
+
+  const municipalAttackRate =
+    totalPopulation2026 > 0 ? (totalYtdCases / totalPopulation2026) * 1000 : 0;
 
   return (
     <div className="p-5 rounded-xl bg-[#111318] border border-white/[0.08] flex flex-col justify-between h-full print-break-inside">
@@ -67,8 +88,8 @@ export const BarangayRiskTable: React.FC<BarangayRiskTableProps> = ({ records })
           <h3 className="text-base font-semibold text-white tracking-tight">
             Barangay Heatmap
           </h3>
-          <p className="text-xs text-slate-400 mt-0.5">
-            7-week trend, total cases, attack rate &amp; Pareto share
+          <p className="text-xs text-slate-400 mt-0.5 font-mono tabular-nums">
+            Pop. {totalPopulation2026.toLocaleString()} · Municipal AR {municipalAttackRate.toFixed(2)}/1,000
           </p>
         </div>
 
@@ -99,7 +120,7 @@ export const BarangayRiskTable: React.FC<BarangayRiskTableProps> = ({ records })
       </div>
 
       {/* High-Density Heatmap & Pareto Table */}
-      <div className="mt-2 flex-1 overflow-x-auto print-expand max-h-[340px] overflow-y-auto">
+      <div className="mt-2 flex-1 overflow-x-auto print-expand max-h-[360px] overflow-y-auto">
         <table className="w-full text-left text-xs border-collapse">
           <thead className="bg-[#111318] sticky top-0 z-10 border-b border-white/[0.1] text-[11px] font-mono text-slate-400">
             <tr>
@@ -111,15 +132,27 @@ export const BarangayRiskTable: React.FC<BarangayRiskTableProps> = ({ records })
               <th className="py-2 px-2 font-medium text-right whitespace-nowrap">Total Cases</th>
               <th className="py-2 px-2 font-medium text-right whitespace-nowrap">Population 2026</th>
               <th className="py-2 px-2 font-medium text-right whitespace-nowrap">Attack Rate / 1,000</th>
-              <th className="py-2 px-2 font-medium whitespace-nowrap">Hotspot</th>
+              <th className="py-2 px-2 font-medium whitespace-nowrap">Level of Risk</th>
               <th className="py-2 pl-2 font-medium text-right whitespace-nowrap">Pareto</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-white/[0.06] font-mono tabular-nums">
             {displayedRows.map(row => {
-              const rawPop = population2026Map[row.name] || '';
+              const rawPop =
+                population2026Map[row.name] !== undefined
+                  ? population2026Map[row.name]
+                  : String(row.population);
               const popNum = rawPop ? parseInt(rawPop, 10) : 0;
               const attackRate = popNum > 0 ? (row.ytdCases / popNum) * 1000 : null;
+              const riskLevel = classifyBarangayRiskLevel(
+                row.ytdCases,
+                attackRate,
+                row.isVitalFew80
+              );
+              const riskTooltip =
+                riskLevel === 'No Case'
+                  ? `${row.name}: 0 cases reported`
+                  : `${row.name}: ${riskLevel} · AR ${attackRate !== null ? attackRate.toFixed(2) : '—'}/1,000 (${row.isVitalFew80 ? 'Pareto 80% Vital Few' : 'Outside Pareto 80%'})`;
 
               return (
                 <tr
@@ -162,8 +195,11 @@ export const BarangayRiskTable: React.FC<BarangayRiskTableProps> = ({ records })
                   <td className="py-1.5 px-2 text-right text-slate-300 whitespace-nowrap">
                     {attackRate !== null ? attackRate.toFixed(2) : '—'}
                   </td>
-                  <td className={`py-1.5 px-2 font-sans text-[11px] font-medium whitespace-nowrap ${getHotspotTextClass(row.hotspotTier)}`}>
-                    {row.hotspotTier}
+                  <td
+                    title={riskTooltip}
+                    className={`py-1.5 px-2 font-sans text-[11px] whitespace-nowrap ${getRiskLevelTextClass(riskLevel)}`}
+                  >
+                    {riskLevel}
                   </td>
                   <td className="py-1.5 pl-2 text-right">
                     <div className="flex items-center justify-end gap-2">

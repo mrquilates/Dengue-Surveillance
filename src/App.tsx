@@ -53,6 +53,8 @@ export default function App() {
     return () => unsubscribe();
   }, []);
 
+  const [isPreloadedReady, setIsPreloadedReady] = useState(false);
+
   // Automated Dengue Webhook & Case Ingestion Telemetry State
   const [autoSyncTelemetry, setAutoSyncTelemetry] = useState<{
     enabled: boolean;
@@ -62,25 +64,56 @@ export default function App() {
     status: string;
   }>({
     enabled: true,
-    totalCases: 55,
+    totalCases: 313,
     lastSync: new Date().toLocaleTimeString(),
     sourceUrl: 'https://pidsr.doh.gov.ph/pidsr/diseases/dengue',
     status: 'ONLINE_ACTIVE',
   });
   const [isManualSyncing, setIsManualSyncing] = useState(false);
 
-  // Initialize with authentic Dengue surveillance dataset on initial load
+  // Preload cleaned 2026 Argao Dengue surveillance CSV dataset on initial boot
   useEffect(() => {
-    const { records, report } = processRawSurveillanceCSV(
-      SAMPLE_CSV_CONTENT,
-      'benchmark_dengue_surveillance_2026.csv'
-    );
-    setAllRecords(records);
-    setValidationReport(report);
+    let isMounted = true;
+    const preloadCleanedDataset = async () => {
+      try {
+        const res = await fetch('/assets/aistudio/Dengue_Cases_2026-11-21_Cleaned_b09987d6.csv');
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const csvText = await res.text();
+        if (!isMounted) return;
+        const { records, report } = processRawSurveillanceCSV(
+          csvText,
+          'Dengue_Cases_2026-11-21_Cleaned_b09987d6.csv'
+        );
+        setAllRecords(records);
+        setValidationReport(report);
+        setRawCSVHistory(csvText);
+        setAutoSyncTelemetry(prev => ({
+          ...prev,
+          totalCases: records.length,
+          lastSync: new Date().toLocaleTimeString(),
+        }));
+      } catch {
+        if (!isMounted) return;
+        const { records, report } = processRawSurveillanceCSV(
+          SAMPLE_CSV_CONTENT,
+          'benchmark_dengue_surveillance_2026.csv'
+        );
+        setAllRecords(records);
+        setValidationReport(report);
+      } finally {
+        if (isMounted) setIsPreloadedReady(true);
+      }
+    };
+
+    preloadCleanedDataset();
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   // Global Periodic Poll for Automated Dengue Ingestion from https://pidsr.doh.gov.ph/pidsr/diseases/dengue
   useEffect(() => {
+    if (!isPreloadedReady) return;
     let isMounted = true;
     const pollCases = async () => {
       try {
@@ -90,20 +123,20 @@ export default function App() {
         if (!isMounted || !data.success || !Array.isArray(data.cases)) return;
 
         if (data.autoSync) {
-          setAutoSyncTelemetry({
+          setAutoSyncTelemetry(prev => ({
             enabled: data.autoSync.enabled,
-            totalCases: data.count || data.cases.length,
+            totalCases: Math.max(prev.totalCases, data.count || data.cases.length),
             lastSync: data.lastSyncTimestamp
               ? new Date(data.lastSyncTimestamp).toLocaleTimeString()
               : new Date().toLocaleTimeString(),
             sourceUrl: data.sourceUrl || 'https://pidsr.doh.gov.ph/pidsr/diseases/dengue',
             status: data.autoSync.lastSyncStatus || 'ONLINE_ACTIVE',
-          });
+          }));
         }
 
         if (data.cases.length > 0) {
           setAllRecords(prev => {
-            if (data.cases.length > prev.length) {
+            if (prev.length > 0 && data.cases.length > prev.length) {
               const csvText = convertPIDSRWebhookCasesToCSV(data.cases);
               const { records, report } = processRawSurveillanceCSV(
                 csvText,
@@ -127,7 +160,7 @@ export default function App() {
       isMounted = false;
       clearInterval(interval);
     };
-  }, []);
+  }, [isPreloadedReady]);
 
   const handleTriggerManualSync = async () => {
     setIsManualSyncing(true);
@@ -162,15 +195,59 @@ export default function App() {
     filename: string,
     mode: 'replace' | 'append' = 'replace'
   ) => {
-    let combinedCSV = csvText;
-    if (mode === 'append' && rawCSVHistory) {
-      const incomingLines = csvText.split('\n');
-      const dataLines = incomingLines.slice(1).filter(l => l.trim().length > 0);
-      combinedCSV = rawCSVHistory.trim() + '\n' + dataLines.join('\n');
+    if (mode === 'append' && allRecords.length > 0) {
+      const { records: incomingRecords, report: incomingReport } = processRawSurveillanceCSV(
+        csvText,
+        filename
+      );
+      const existingEpiIds = new Set(allRecords.map(r => r.epiId));
+      const ts = Date.now();
+      const appendedRecords = incomingRecords.map((r, idx) => {
+        const isDup = r.isDuplicate || existingEpiIds.has(r.epiId);
+        return {
+          ...r,
+          id: `${r.id}-app-${ts}-${idx}`,
+          rawRowIndex: allRecords.length + idx + 1,
+          isDuplicate: isDup,
+          duplicateReason:
+            existingEpiIds.has(r.epiId) && !r.duplicateReason
+              ? `Exact match on Primary Identifier (EPIID: ${r.epiId})`
+              : r.duplicateReason,
+        };
+      });
+      const merged = [...allRecords, ...appendedRecords];
+      const newDupsCount = appendedRecords.filter(r => r.isDuplicate).length;
+      const mergedValid = merged.filter(r => r.isValid && !r.isDuplicate).length;
+
+      setAllRecords(merged);
+      setValidationReport(prev =>
+        prev
+          ? {
+              ...prev,
+              totalRecords: merged.length,
+              validRecords: mergedValid,
+              invalidRecords: merged.length - mergedValid,
+              duplicatesRemoved: prev.duplicatesRemoved + newDupsCount,
+              auditLogs: [...incomingReport.auditLogs, ...prev.auditLogs].slice(0, 500),
+            }
+          : incomingReport
+      );
+
+      if (currentUser) {
+        recordDatasetUpload(currentUser.uid, {
+          id: `ds-${ts}`,
+          filename,
+          recordCount: merged.length,
+          diseaseId: 'DEN',
+          overallDqi: incomingReport.overallDQI,
+          uploadedAt: new Date().toISOString(),
+        });
+      }
+      return;
     }
 
-    const { records, report } = processRawSurveillanceCSV(combinedCSV, filename);
-    setRawCSVHistory(combinedCSV);
+    const { records, report } = processRawSurveillanceCSV(csvText, filename);
+    setRawCSVHistory(csvText);
     setAllRecords(records);
     setValidationReport(report);
 
@@ -231,6 +308,7 @@ export default function App() {
         {activeView === 'collection' && (
           <DataCollectionView
             records={filteredRecords}
+            metrics={metrics}
             validationReport={validationReport}
             autoSyncTelemetry={autoSyncTelemetry}
             isManualSyncing={isManualSyncing}

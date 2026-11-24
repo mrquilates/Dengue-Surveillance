@@ -46,10 +46,24 @@ export const TopTelemetryRow: React.FC<TopTelemetryRowProps> = ({
   const nationalThreshold = 1.0;
   const isCfrExceeded = cfr >= nationalThreshold;
 
+  const meanConsultDelay = metrics.onsetToConsultationDaysMean;
+  const medianConsultDelay = metrics.onsetToConsultationDaysMedian;
+  const earlyConsultPct = metrics.earlyConsultationRatePct ?? 0;
+  const delayedConsultPct = metrics.delayedConsultationRatePct ?? 0;
+  const delayEvaluatedCount = metrics.consultDelayEvaluatedCount ?? 0;
+  const isDelayOptimal = meanConsultDelay <= 2.0;
+  const isDelayElevated = meanConsultDelay > 3.0;
+
+  const hospitalizationRate = metrics.hospitalizationRate;
+  const hospitalizedCount = metrics.hospitalizedCount;
+  const outpatientCount =
+    metrics.outpatientCount ?? Math.max(0, totalCases - hospitalizedCount);
+  const meanAdmitDelay = metrics.onsetToAdmissionDaysMean;
+
   return (
     <section className="space-y-5">
-      {/* Four Equal-Column KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* Six Equal-Column Executive KPI Cards (3x2 Balanced Composition) */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         <div className="p-5 rounded-xl bg-[#111318] border border-white/[0.08] flex flex-col justify-between">
           <div className="text-xs font-medium text-slate-400">Total Cases</div>
           <div className="mt-2.5 flex items-baseline gap-2.5">
@@ -69,7 +83,8 @@ export const TopTelemetryRow: React.FC<TopTelemetryRowProps> = ({
             </span>
           </div>
           <div className="mt-2 text-xs text-slate-400 font-mono tabular-nums">
-            vs. {lastYearSamePeriodCases.toLocaleString()} last year
+            vs. {lastYearSamePeriodCases.toLocaleString()} last year · AR{' '}
+            {((totalCases / (metrics.totalPopulation || 79064)) * 1000).toFixed(2)}/1,000
           </div>
         </div>
 
@@ -133,6 +148,60 @@ export const TopTelemetryRow: React.FC<TopTelemetryRowProps> = ({
           </div>
           <div className="mt-2 text-xs text-slate-400 font-mono tabular-nums">
             vs. &lt;{nationalThreshold.toFixed(0)}% National Standard
+          </div>
+        </div>
+
+        <div className="p-5 rounded-xl bg-[#111318] border border-white/[0.08] flex flex-col justify-between">
+          <div className="text-xs font-medium text-slate-400">
+            Health-Seeking Delay
+          </div>
+          <div className="mt-2.5 flex items-baseline gap-2.5">
+            <span
+              className={`text-3xl sm:text-4xl font-bold font-mono tracking-tight tabular-nums ${
+                isDelayElevated
+                  ? 'text-red-400'
+                  : isDelayOptimal
+                  ? 'text-emerald-400'
+                  : 'text-amber-400'
+              }`}
+            >
+              {meanConsultDelay.toFixed(1)}d
+            </span>
+            <span
+              className={`text-xs font-mono font-medium tabular-nums ${
+                isDelayElevated
+                  ? 'text-red-300'
+                  : isDelayOptimal
+                  ? 'text-emerald-300'
+                  : 'text-amber-300'
+              }`}
+            >
+              {earlyConsultPct.toFixed(1)}% within ≤2d
+            </span>
+          </div>
+          <div className="mt-2 text-xs text-slate-400 font-mono tabular-nums">
+            Median {medianConsultDelay.toFixed(1)}d · {delayedConsultPct.toFixed(1)}% delayed &gt;3d · n={delayEvaluatedCount.toLocaleString()}
+          </div>
+        </div>
+
+        <div className="p-5 rounded-xl bg-[#111318] border border-white/[0.08] flex flex-col justify-between">
+          <div className="text-xs font-medium text-slate-400">
+            Hospitalization Rate
+          </div>
+          <div className="mt-2.5 flex items-baseline gap-2.5">
+            <span
+              className={`text-3xl sm:text-4xl font-bold font-mono tracking-tight tabular-nums ${
+                hospitalizationRate >= 60 ? 'text-amber-400' : 'text-blue-400'
+              }`}
+            >
+              {hospitalizationRate.toFixed(1)}%
+            </span>
+            <span className="text-xs font-mono font-medium tabular-nums text-blue-300">
+              {hospitalizedCount.toLocaleString()} admitted
+            </span>
+          </div>
+          <div className="mt-2 text-xs text-slate-400 font-mono tabular-nums">
+            {outpatientCount.toLocaleString()} outpatient · Mean {meanAdmitDelay.toFixed(1)}d to admit
           </div>
         </div>
       </div>

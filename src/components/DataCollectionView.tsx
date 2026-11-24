@@ -10,11 +10,13 @@ import {
   ChevronDown,
   ClipboardPaste,
   ArrowLeft,
+  Code2,
 } from 'lucide-react';
-import { SurveillanceRecord, ValidationReport } from '../types/surveillance';
+import { EpidemiologicalMetrics, SurveillanceRecord, ValidationReport } from '../types/surveillance';
 import { LineListTable } from './LineListTable';
 import { PIDSRWebhookPanel } from './PIDSRWebhookPanel';
 import { GoogleSheetsPastePanel } from './GoogleSheetsPastePanel';
+import { GoogleSitesEmbedModal } from './GoogleSitesEmbedModal';
 import {
   exportSurveillanceCSV,
   exportSurveillanceExcel,
@@ -30,6 +32,7 @@ interface AutoSyncTelemetry {
 
 interface DataCollectionViewProps {
   records: SurveillanceRecord[];
+  metrics: EpidemiologicalMetrics;
   validationReport: ValidationReport;
   autoSyncTelemetry: AutoSyncTelemetry;
   isManualSyncing: boolean;
@@ -42,6 +45,7 @@ interface DataCollectionViewProps {
 
 export const DataCollectionView: React.FC<DataCollectionViewProps> = ({
   records,
+  metrics,
   validationReport,
   autoSyncTelemetry,
   isManualSyncing,
@@ -54,6 +58,7 @@ export const DataCollectionView: React.FC<DataCollectionViewProps> = ({
   const [subTab, setSubTab] = useState<'linelist' | 'paste' | 'pidsr'>('linelist');
   const [tableFilteredRecords, setTableFilteredRecords] = useState<SurveillanceRecord[] | null>(null);
   const [isExportMenuOpen, setIsExportMenuOpen] = useState(false);
+  const [isEmbedModalOpen, setIsEmbedModalOpen] = useState(false);
   const [exportNotice, setExportNotice] = useState<string | null>(null);
   const exportMenuRef = useRef<HTMLDivElement>(null);
 
@@ -211,9 +216,36 @@ export const DataCollectionView: React.FC<DataCollectionViewProps> = ({
                   </span>
                   <span className="text-[11px] font-mono text-slate-400">2 Sheets</span>
                 </button>
+
+                <div className="my-1 border-t border-white/[0.08]" />
+
+                <button
+                  type="button"
+                  role="menuitem"
+                  onClick={() => {
+                    setIsExportMenuOpen(false);
+                    setIsEmbedModalOpen(true);
+                  }}
+                  className="w-full px-3.5 py-2.5 text-left hover:bg-white/[0.05] flex items-center justify-between gap-3 text-xs text-slate-100 cursor-pointer transition-colors focus-visible:outline-none focus-visible:bg-white/[0.08]"
+                >
+                  <span className="flex items-center gap-2.5 font-medium">
+                    <Code2 className="w-4 h-4 text-blue-400 shrink-0" />
+                    <span>Google Sites Embed (.html)</span>
+                  </span>
+                  <span className="text-[11px] font-mono text-blue-300">Full BI</span>
+                </button>
               </div>
             )}
           </div>
+
+          <button
+            type="button"
+            onClick={() => setIsEmbedModalOpen(true)}
+            className="px-3.5 py-2 rounded-lg bg-[#171a21] hover:bg-slate-800 border border-white/[0.1] text-xs font-semibold text-slate-100 flex items-center gap-2 whitespace-nowrap shrink-0 cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+          >
+            <Code2 className="w-3.5 h-3.5 text-blue-400" />
+            <span>Google Sites Embed</span>
+          </button>
 
           <button
             onClick={onOpenUpload}
@@ -335,6 +367,18 @@ export const DataCollectionView: React.FC<DataCollectionViewProps> = ({
           currentRecordsCount={activeRecords.length}
         />
       )}
+
+      <GoogleSitesEmbedModal
+        isOpen={isEmbedModalOpen}
+        onClose={() => setIsEmbedModalOpen(false)}
+        records={activeRecords}
+        metrics={metrics}
+        onDownloaded={filename =>
+          setExportNotice(
+            `Generated self-contained Google Sites BI embed HTML (${filename}) with ${activeRecords.length.toLocaleString()} anonymized cases.`
+          )
+        }
+      />
     </div>
   );
 };

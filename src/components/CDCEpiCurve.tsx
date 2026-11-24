@@ -20,6 +20,20 @@ export const CDCEpiCurve: React.FC<CDCEpiCurveProps> = ({
     return Math.ceil(maxObserved * 1.18);
   }, [channelData]);
 
+  const coverageLabel = useMemo(() => {
+    const validDates = records
+      .filter(r => !r.isDuplicate && r.dateOnset)
+      .map(r => r.dateOnset)
+      .sort();
+    if (validDates.length === 0) return `Jan – Nov, ${new Date().getFullYear()}`;
+    const start = new Date(`${validDates[0]}T00:00:00`);
+    const end = new Date(`${validDates[validDates.length - 1]}T00:00:00`);
+    if (isNaN(start.getTime()) || isNaN(end.getTime())) return 'Jan – Nov 21, 2026';
+    const startStr = start.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    const endStr = end.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    return `${startStr} – ${endStr}`;
+  }, [records]);
+
   const width = 920;
   const height = 290;
   const pad = { top: 22, right: 16, bottom: 48, left: 34 };
@@ -37,8 +51,8 @@ export const CDCEpiCurve: React.FC<CDCEpiCurveProps> = ({
           <h3 className="text-base font-semibold text-white tracking-tight">
             Epidemic Curve
           </h3>
-          <p className="text-xs text-slate-400 mt-0.5">
-            Weekly cases by onset of symptoms · Jan – Nov 14, 2026
+          <p className="text-xs text-slate-400 mt-0.5 font-mono tabular-nums">
+            Weekly cases by onset of symptoms · {coverageLabel}
           </p>
         </div>
 
